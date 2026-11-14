@@ -881,7 +881,7 @@ export default function EarthObservatory3D({
   }, []);
 
   return (
-    <div className={`relative w-full h-full min-h-[500px] select-none overflow-hidden bg-[#020817] ${className}`}>
+    <div className={`relative w-full h-full min-h-[500px] select-none overflow-hidden bg-[#171B2B] ${className}`}>
       {/* 3D WebGL Canvas Ref Mount (isolated outside re-rendering HUD) */}
       <div 
         ref={mountRef} 
@@ -890,16 +890,16 @@ export default function EarthObservatory3D({
 
       {/* Top-Left Minimal Spec & Identity Badge (Clean, Zero Pulsating Dots) */}
       <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#061426] border border-cyan-500/40 rounded-xl text-xs font-mono text-cyan-300 shadow-2xl pointer-events-auto">
-          <Orbit className="w-4 h-4 text-cyan-400" />
-          <span className="font-bold tracking-wide text-white">EARTH TRACE SENTINEL-ALPHA</span>
-          <span className="text-[10px] text-cyan-400/80 px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-800">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#232A3D] border border-[#48516A] rounded-xl text-xs font-mono text-[#F0EBDD] shadow-2xl pointer-events-auto">
+          <Orbit className="w-4 h-4 text-[#A6B7D4]" />
+          <span className="font-bold tracking-wide text-[#F0EBDD]">EARTH TRACE SENTINEL-ALPHA</span>
+          <span className="text-[10px] text-[#A6B7D4] px-1.5 py-0.5 rounded bg-[#1D2436] border border-[#48516A]">
             LEO 705 KM
           </span>
         </div>
 
-        <div className="text-[10px] font-mono text-slate-400 bg-[#061426]/90 border border-slate-800 px-2.5 py-1 rounded-lg flex items-center gap-2 max-w-xs pointer-events-auto">
-          <MapPin className="w-3 h-3 text-cyan-400" />
+        <div className="text-[10px] font-mono text-[#B5BDCC] bg-[#232A3D]/95 border border-[#48516A] px-2.5 py-1 rounded-lg flex items-center gap-2 max-w-xs pointer-events-auto">
+          <MapPin className="w-3 h-3 text-[#A6B7D4]" />
           <span className="truncate">Nadir Target: {selectedLocation.name} ({selectedLocation.lat.toFixed(2)}°N, {selectedLocation.lon.toFixed(2)}°E)</span>
         </div>
       </div>
@@ -911,17 +911,17 @@ export default function EarthObservatory3D({
           title={audioEnabled ? "Mute Spacecraft Telemetry Beep" : "Enable Spacecraft Telemetry Synthesizer"}
           className={`p-2 rounded-xl border text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 shadow-xl ${
             audioEnabled 
-              ? 'bg-cyan-950 border-cyan-400 text-cyan-300' 
-              : 'bg-[#061426] border-[#172b4d] text-slate-400 hover:text-white'
+              ? 'bg-[#353D55] border-[#A6B7D4] text-[#F0EBDD]' 
+              : 'bg-[#232A3D] border-[#48516A] text-[#B5BDCC] hover:text-[#F0EBDD]'
           }`}
         >
-          {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          {audioEnabled ? <Volume2 className="w-4 h-4 text-[#A6B7D4]" /> : <VolumeX className="w-4 h-4" />}
           <span className="hidden sm:inline text-[11px]">{audioEnabled ? 'Telemetry Audio ON' : 'Audio Muted'}</span>
         </button>
 
         <button
           onClick={() => setIsControlsCollapsed(!isControlsCollapsed)}
-          className="p-2 bg-[#061426] border border-[#172b4d] hover:border-cyan-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-mono transition-all cursor-pointer flex items-center gap-1 shadow-xl"
+          className="p-2 bg-[#232A3D] border border-[#48516A] hover:border-[#A6B7D4] text-[#B5BDCC] hover:text-[#F0EBDD] rounded-xl text-xs font-mono transition-all cursor-pointer flex items-center gap-1 shadow-xl"
           title="Toggle Controls (Hotkey: H)"
         >
           {isControlsCollapsed ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
@@ -935,10 +935,10 @@ export default function EarthObservatory3D({
           isControlsCollapsed ? 'translate-y-[calc(100%+20px)] opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >
-        <div className="bg-[#061426] border border-[#172b4d] rounded-2xl shadow-2xl p-3 flex flex-col gap-2.5">
+        <div className="bg-[#232A3D] border border-[#48516A] rounded-2xl shadow-2xl p-3 flex flex-col gap-2.5">
           {/* Dock Tab Selector & Speed Controls */}
-          <div className="flex flex-wrap items-center justify-between border-b border-[#132238] pb-2 gap-2 text-xs font-mono">
-            <div className="flex items-center gap-1 bg-[#020817] p-1 rounded-xl border border-[#172b4d]">
+          <div className="flex flex-wrap items-center justify-between border-b border-[#2D354A] pb-2 gap-2 text-xs font-mono">
+            <div className="flex items-center gap-1 bg-[#1D2436] p-1 rounded-xl border border-[#48516A]">
               {[
                 { id: 'camera', label: 'Camera Views', icon: Camera },
                 { id: 'subsystems', label: 'Exploded Inspection', icon: Sliders },
@@ -953,8 +953,8 @@ export default function EarthObservatory3D({
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer text-[11px] ${
                       isActive 
-                        ? 'bg-gradient-to-r from-cyan-500 to-teal-400 text-slate-950 font-bold shadow-md' 
-                        : 'text-slate-400 hover:text-white hover:bg-[#061426]'
+                        ? 'bg-[#A6B7D4] text-[#171B2B] font-bold shadow-sm' 
+                        : 'text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#2B3349]'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -968,20 +968,20 @@ export default function EarthObservatory3D({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsPaused(!isPaused)}
-                className="p-1.5 rounded-lg bg-[#020817] border border-[#172b4d] hover:border-cyan-500/40 text-cyan-400 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg bg-[#1D2436] border border-[#48516A] hover:border-[#A6B7D4] text-[#A6B7D4] transition-colors cursor-pointer"
                 title={isPaused ? "Resume Orbit Simulation" : "Pause Orbit Simulation"}
               >
                 {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
               </button>
 
-              <div className="flex items-center gap-1 bg-[#020817] px-2 py-1 rounded-lg border border-[#172b4d] text-[10px]">
-                <span className="text-slate-500">Speed:</span>
+              <div className="flex items-center gap-1 bg-[#1D2436] px-2 py-1 rounded-lg border border-[#48516A] text-[10px]">
+                <span className="text-[#838FA3]">Speed:</span>
                 {[0.5, 1.0, 2.5].map((spd) => (
                   <button
                     key={spd}
                     onClick={() => setOrbitSpeed(spd)}
                     className={`px-1.5 py-0.5 rounded cursor-pointer ${
-                      orbitSpeed === spd ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                      orbitSpeed === spd ? 'bg-[#A6B7D4] text-[#171B2B] font-bold' : 'text-[#B5BDCC] hover:text-[#F0EBDD]'
                     }`}
                   >
                     {spd}x
@@ -994,7 +994,7 @@ export default function EarthObservatory3D({
           {/* Tab Content Panels */}
           {activeTab === 'camera' && (
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider">Kinematic Presets:</span>
+              <span className="text-[10px] text-[#B5BDCC] uppercase tracking-wider">Kinematic Presets:</span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
                   { id: 'chase', label: '🛰️ Satellite Chase' },
@@ -1008,8 +1008,8 @@ export default function EarthObservatory3D({
                     onClick={() => setCameraPreset(preset.id as CameraPreset)}
                     className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer text-[11px] ${
                       cameraPreset === preset.id
-                        ? 'bg-cyan-950 text-cyan-300 border-cyan-500 font-bold shadow-sm'
-                        : 'bg-[#020817] text-slate-300 border-[#172b4d] hover:border-slate-600 hover:text-white'
+                        ? 'bg-[#353D55] text-[#F0EBDD] border-[#A6B7D4] font-bold shadow-sm'
+                        : 'bg-[#1D2436] text-[#B5BDCC] border-[#48516A] hover:border-[#64718A] hover:text-[#F0EBDD]'
                     }`}
                   >
                     {preset.label}
@@ -1022,14 +1022,14 @@ export default function EarthObservatory3D({
           {activeTab === 'subsystems' && (
             <div className="space-y-1.5 text-xs font-mono">
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-cyan-300 font-semibold flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-[#F0EBDD] font-semibold flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-[#A6B7D4]" />
                   Spacecraft Exploded-View Kinematics
                 </span>
-                <span className="text-white font-bold">{Math.round(explodedRatio * 100)}% Displaced</span>
+                <span className="text-[#A6B7D4] font-bold">{Math.round(explodedRatio * 100)}% Displaced</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-500">Flight Configuration (0%)</span>
+                <span className="text-[10px] text-[#838FA3]">Flight Configuration (0%)</span>
                 <input
                   type="range"
                   min="0"
@@ -1037,15 +1037,15 @@ export default function EarthObservatory3D({
                   step="0.01"
                   value={explodedRatio}
                   onChange={(e) => setExplodedRatio(parseFloat(e.target.value))}
-                  className="flex-1 h-1.5 bg-[#020817] rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                  className="flex-1 h-1.5 bg-[#1D2436] rounded-lg appearance-none cursor-pointer accent-[#A6B7D4]"
                 />
-                <span className="text-[10px] text-slate-500">Exploded Subsystems (100%)</span>
+                <span className="text-[10px] text-[#838FA3]">Exploded Subsystems (100%)</span>
               </div>
-              <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+              <div className="flex items-center justify-between text-[10px] text-[#B5BDCC] pt-1">
                 <span>Displaces: Solar Wings · Parabolic Dish · MERRA-2 Radiometer · Thermal Louvers</span>
                 <button
                   onClick={() => setExplodedRatio(explodedRatio > 0 ? 0 : 0.85)}
-                  className="text-cyan-400 hover:underline cursor-pointer"
+                  className="text-[#A6B7D4] hover:underline cursor-pointer"
                 >
                   {explodedRatio > 0 ? 'Reset to Flight' : 'Expand Subassemblies'}
                 </button>
@@ -1055,21 +1055,21 @@ export default function EarthObservatory3D({
 
           {activeTab === 'layers' && (
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider">Atmospheric Mode:</span>
+              <span className="text-[10px] text-[#B5BDCC] uppercase tracking-wider">Atmospheric Mode:</span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
-                  { id: 'pm25', label: 'PM2.5 Aerosol Burden', color: 'border-rose-500 text-rose-300' },
-                  { id: 'inversion', label: 'Boundary Layer Inversion Lid', color: 'border-cyan-500 text-cyan-300' },
-                  { id: 'precip', label: 'Cloud Rain Wet Deposition', color: 'border-blue-500 text-blue-300' },
-                  { id: 'aod', label: 'MODIS Aerosol Optical Depth', color: 'border-purple-500 text-purple-300' }
+                  { id: 'pm25', label: 'PM2.5 Aerosol Burden', color: 'border-[#F16C72] text-[#F16C72]' },
+                  { id: 'inversion', label: 'Boundary Layer Inversion Lid', color: 'border-[#A6B7D4] text-[#A6B7D4]' },
+                  { id: 'precip', label: 'Cloud Rain Wet Deposition', color: 'border-[#35C98B] text-[#35C98B]' },
+                  { id: 'aod', label: 'MODIS Aerosol Optical Depth', color: 'border-[#D28B71] text-[#D28B71]' }
                 ].map((layer) => (
                   <button
                     key={layer.id}
                     onClick={() => setActiveAtmosphereLayer(layer.id as any)}
                     className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer text-[11px] ${
                       activeAtmosphereLayer === layer.id
-                        ? `bg-slate-900 ${layer.color} font-bold shadow-sm`
-                        : 'bg-[#020817] text-slate-400 border-[#172b4d] hover:text-white'
+                        ? `bg-[#1D2436] ${layer.color} font-bold shadow-sm`
+                        : 'bg-[#1D2436] text-[#B5BDCC] border-[#48516A] hover:text-[#F0EBDD]'
                     }`}
                   >
                     {layer.label}
@@ -1081,21 +1081,21 @@ export default function EarthObservatory3D({
 
           {activeTab === 'telemetry' && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono">
-              <div className="p-2 bg-[#020817] rounded-xl border border-[#172b4d]">
-                <div className="text-slate-500">Altitude / Speed:</div>
-                <div className="text-white font-bold">{liveTelemetry.altitudeKm} km · {liveTelemetry.velocityKmS} km/s</div>
+              <div className="p-2 bg-[#1D2436] rounded-xl border border-[#48516A]">
+                <div className="text-[#838FA3]">Altitude / Speed:</div>
+                <div className="text-[#F0EBDD] font-bold">{liveTelemetry.altitudeKm} km · {liveTelemetry.velocityKmS} km/s</div>
               </div>
-              <div className="p-2 bg-[#020817] rounded-xl border border-[#172b4d]">
-                <div className="text-slate-500">Subsatellite Point:</div>
-                <div className="text-cyan-300 font-bold">{liveTelemetry.subsatelliteLat}°N, {liveTelemetry.subsatelliteLon}°E</div>
+              <div className="p-2 bg-[#1D2436] rounded-xl border border-[#48516A]">
+                <div className="text-[#838FA3]">Subsatellite Point:</div>
+                <div className="text-[#A6B7D4] font-bold">{liveTelemetry.subsatelliteLat}°N, {liveTelemetry.subsatelliteLon}°E</div>
               </div>
-              <div className="p-2 bg-[#020817] rounded-xl border border-[#172b4d]">
-                <div className="text-slate-500">Solar Array Power:</div>
-                <div className="text-emerald-400 font-bold">{liveTelemetry.solarPowerWatts} Watts</div>
+              <div className="p-2 bg-[#1D2436] rounded-xl border border-[#48516A]">
+                <div className="text-[#838FA3]">Solar Array Power:</div>
+                <div className="text-[#35C98B] font-bold">{liveTelemetry.solarPowerWatts} Watts</div>
               </div>
-              <div className="p-2 bg-[#020817] rounded-xl border border-[#172b4d]">
-                <div className="text-slate-500">LiDAR Sounder PBL Height:</div>
-                <div className="text-purple-300 font-bold">{liveTelemetry.pblHeightMeters} m MSL</div>
+              <div className="p-2 bg-[#1D2436] rounded-xl border border-[#48516A]">
+                <div className="text-[#838FA3]">LiDAR Sounder PBL Height:</div>
+                <div className="text-[#D28B71] font-bold">{liveTelemetry.pblHeightMeters} m MSL</div>
               </div>
             </div>
           )}

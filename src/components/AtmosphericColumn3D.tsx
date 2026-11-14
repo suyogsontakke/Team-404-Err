@@ -337,18 +337,18 @@ export default function AtmosphericColumn3D({
   }, []);
 
   return (
-    <div className={`bg-[#0B0E17] border border-[#1E293B] rounded-2xl p-5 shadow-xl flex flex-col lg:flex-row gap-6 ${className}`}>
+    <div className={`bg-[#353D55] border border-[#48516A] rounded-2xl p-5 shadow-xl flex flex-col lg:flex-row gap-6 ${className}`}>
       {/* 3D Viewport Column */}
-      <div className="relative flex-1 min-h-[380px] bg-[#07090E] rounded-xl border border-[#1E293B] overflow-hidden select-none">
+      <div className="relative flex-1 min-h-[380px] bg-[#171B2B] rounded-xl border border-[#48516A] overflow-hidden select-none">
         <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
         {/* Viewport HUD Overlays */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 pointer-events-none">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#0B0E17]/90 border border-cyan-500/40 rounded-lg text-xs font-mono text-cyan-300 backdrop-blur">
-            <Activity className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#232A3D]/95 border border-[#48516A] rounded-lg text-xs font-mono text-[#F0EBDD]">
+            <Activity className="w-3.5 h-3.5 text-[#A6B7D4]" />
             <span>3D Atmospheric Boundary Layer Simulator</span>
           </div>
-          <div className="text-[10px] font-mono text-slate-400 bg-slate-950/80 px-2 py-0.5 rounded border border-[#1E293B]">
+          <div className="text-[10px] font-mono text-[#B5BDCC] bg-[#1D2436]/90 px-2 py-0.5 rounded border border-[#48516A]">
             PBL Mixing Height: {pblHeightMeters}m · Wind: {windSpeed} m/s
           </div>
         </div>
@@ -357,15 +357,15 @@ export default function AtmosphericColumn3D({
         <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
           <div className={`px-2.5 py-1 rounded-lg text-xs font-mono border backdrop-blur flex items-center gap-1.5 ${
             isStagnant 
-              ? 'bg-rose-950/80 border-rose-800 text-rose-300' 
-              : 'bg-emerald-950/80 border-emerald-800 text-emerald-300'
+              ? 'bg-[#F16C72]/20 border-[#F16C72]/50 text-[#F16C72]' 
+              : 'bg-[#35C98B]/20 border-[#35C98B]/50 text-[#35C98B]'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${isStagnant ? 'bg-rose-400 animate-pulse' : 'bg-emerald-400'}`}></span>
+            <span className={`w-2 h-2 rounded-full ${isStagnant ? 'bg-[#F16C72] animate-pulse' : 'bg-[#35C98B]'}`}></span>
             <span>Ventilation Coeff Vc: {ventilationCoeff.toLocaleString()} m²/s ({isStagnant ? 'Stagnant Smog Trap' : 'Clean Dispersion'})</span>
           </div>
 
-          <div className="px-2.5 py-1 bg-slate-950/80 border border-[#1E293B] rounded-lg text-xs font-mono text-white">
-            Estimated PM2.5: <strong className={estimatedPM25 > 35 ? 'text-rose-400' : 'text-emerald-400'}>{estimatedPM25} µg/m³</strong>
+          <div className="px-2.5 py-1 bg-[#232A3D]/95 border border-[#48516A] rounded-lg text-xs font-mono text-[#F0EBDD]">
+            Estimated PM2.5: <strong className={estimatedPM25 > 35 ? 'text-[#F16C72]' : 'text-[#35C98B]'}>{estimatedPM25} µg/m³</strong>
           </div>
         </div>
       </div>
@@ -374,20 +374,20 @@ export default function AtmosphericColumn3D({
       <div className="w-full lg:w-80 space-y-4 shrink-0 flex flex-col justify-between">
         <div className="space-y-4">
           <div>
-            <div className="text-xs font-mono uppercase text-cyan-400 tracking-wider">Atmospheric Physics Deck</div>
-            <h3 className="text-base font-bold text-white mt-0.5">Boundary Layer & Scavenging</h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+            <div className="text-xs font-mono uppercase text-[#A6B7D4] tracking-wider">Atmospheric Physics Deck</div>
+            <h3 className="text-base font-bold text-[#F0EBDD] mt-0.5">Boundary Layer & Scavenging</h3>
+            <p className="text-xs text-[#B5BDCC] mt-1 leading-relaxed">
               Adjust meteorological forcing parameters to see how nocturnal temperature inversions trap particulate matter close to breathing level.
             </p>
           </div>
 
           {/* Slider 1: Wind Speed (WS10M) */}
-          <div className="space-y-1.5 bg-[#07090E] p-3 rounded-xl border border-[#1E293B]">
+          <div className="space-y-1.5 bg-[#232A3D] p-3 rounded-xl border border-[#48516A]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300 flex items-center gap-1.5">
-                <Wind className="w-3.5 h-3.5 text-cyan-400" /> Wind Speed (WS10M)
+              <span className="text-[#F0EBDD] flex items-center gap-1.5">
+                <Wind className="w-3.5 h-3.5 text-[#A6B7D4]" /> Wind Speed (WS10M)
               </span>
-              <span className="font-mono text-cyan-400 font-bold">{windSpeed.toFixed(1)} m/s</span>
+              <span className="font-mono text-[#A6B7D4] font-bold">{windSpeed.toFixed(1)} m/s</span>
             </div>
             <input
               type="range"
@@ -396,21 +396,21 @@ export default function AtmosphericColumn3D({
               step="0.1"
               value={windSpeed}
               onChange={(e) => setWindSpeed(parseFloat(e.target.value))}
-              className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+              className="w-full accent-[#A6B7D4] h-1.5 bg-[#1D2436] rounded-lg cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex justify-between text-[10px] text-[#838FA3] font-mono">
               <span>0.5 (Calm / Trap)</span>
               <span>12.0 (High Gale)</span>
             </div>
           </div>
 
           {/* Slider 2: Planetary Boundary Layer Height */}
-          <div className="space-y-1.5 bg-[#07090E] p-3 rounded-xl border border-[#1E293B]">
+          <div className="space-y-1.5 bg-[#232A3D] p-3 rounded-xl border border-[#48516A]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300 flex items-center gap-1.5">
-                <Thermometer className="w-3.5 h-3.5 text-amber-400" /> Mixing Layer (PBLH)
+              <span className="text-[#F0EBDD] flex items-center gap-1.5">
+                <Thermometer className="w-3.5 h-3.5 text-[#F0B44D]" /> Mixing Layer (PBLH)
               </span>
-              <span className="font-mono text-amber-400 font-bold">{pblHeightMeters} m</span>
+              <span className="font-mono text-[#F0B44D] font-bold">{pblHeightMeters} m</span>
             </div>
             <input
               type="range"
@@ -419,19 +419,19 @@ export default function AtmosphericColumn3D({
               step="50"
               value={pblHeightMeters}
               onChange={(e) => setPblHeightMeters(parseInt(e.target.value, 10))}
-              className="w-full accent-amber-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+              className="w-full accent-[#F0B44D] h-1.5 bg-[#1D2436] rounded-lg cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex justify-between text-[10px] text-[#838FA3] font-mono">
               <span>200m (Winter Night)</span>
               <span>2000m (Day Convective)</span>
             </div>
           </div>
 
           {/* Slider 3: Inversion Thermal Gradient */}
-          <div className="space-y-1.5 bg-[#07090E] p-3 rounded-xl border border-[#1E293B]">
+          <div className="space-y-1.5 bg-[#232A3D] p-3 rounded-xl border border-[#48516A]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Inversion Strength (ΔT)</span>
-              <span className="font-mono text-rose-400 font-bold">+{inversionStrength.toFixed(1)} °C</span>
+              <span className="text-[#F0EBDD]">Inversion Strength (ΔT)</span>
+              <span className="font-mono text-[#F16C72] font-bold">+{inversionStrength.toFixed(1)} °C</span>
             </div>
             <input
               type="range"
@@ -440,9 +440,9 @@ export default function AtmosphericColumn3D({
               step="0.5"
               value={inversionStrength}
               onChange={(e) => setInversionStrength(parseFloat(e.target.value))}
-              className="w-full accent-rose-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+              className="w-full accent-[#F16C72] h-1.5 bg-[#1D2436] rounded-lg cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex justify-between text-[10px] text-[#838FA3] font-mono">
               <span>0°C (Neutral)</span>
               <span>+15°C (Severe Inversion)</span>
             </div>
@@ -453,18 +453,18 @@ export default function AtmosphericColumn3D({
             onClick={() => setIsRaining(!isRaining)}
             className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer border ${
               isRaining 
-                ? 'bg-blue-600/30 text-blue-300 border-blue-500 shadow-md shadow-blue-900/30' 
-                : 'bg-[#07090E] text-slate-300 border-[#1E293B] hover:border-slate-600'
+                ? 'bg-[#A6B7D4] text-[#171B2B] border-[#A6B7D4] font-bold shadow-sm' 
+                : 'bg-[#232A3D] text-[#B5BDCC] border-[#48516A] hover:border-[#64718A] hover:text-[#F0EBDD]'
             }`}
           >
-            <CloudRain className={`w-4 h-4 ${isRaining ? 'text-blue-400 animate-bounce' : 'text-slate-500'}`} />
+            <CloudRain className={`w-4 h-4 ${isRaining ? 'text-[#171B2B] animate-bounce' : 'text-[#838FA3]'}`} />
             <span>{isRaining ? 'Precipitation Scavenging ACTIVE' : 'Enable Rainfall Scavenging'}</span>
           </button>
         </div>
 
         {/* Quick Presets */}
-        <div className="pt-2 border-t border-[#1E293B] space-y-1.5">
-          <div className="text-[10px] font-mono uppercase text-slate-500">Quick Environmental Profiles:</div>
+        <div className="pt-2 border-t border-[#48516A] space-y-1.5">
+          <div className="text-[10px] font-mono uppercase text-[#B5BDCC]">Quick Environmental Profiles:</div>
           <div className="grid grid-cols-2 gap-1.5">
             <button
               onClick={() => {
@@ -473,7 +473,7 @@ export default function AtmosphericColumn3D({
                 setInversionStrength(12.0);
                 setIsRaining(false);
               }}
-              className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-[11px] text-rose-300 rounded border border-rose-900/40 text-left font-mono"
+              className="px-2 py-1 bg-[#232A3D] hover:bg-[#2B3349] text-[11px] text-[#F16C72] rounded border border-[#F16C72]/40 text-left font-mono"
             >
               Winter Smog Trap
             </button>
@@ -484,7 +484,7 @@ export default function AtmosphericColumn3D({
                 setInversionStrength(1.0);
                 setIsRaining(true);
               }}
-              className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-[11px] text-cyan-300 rounded border border-cyan-900/40 text-left font-mono"
+              className="px-2 py-1 bg-[#232A3D] hover:bg-[#2B3349] text-[11px] text-[#A6B7D4] rounded border border-[#48516A] text-left font-mono"
             >
               Monsoon Washout
             </button>

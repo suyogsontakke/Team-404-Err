@@ -1,33 +1,47 @@
-import { useState } from 'react';
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { cardEntranceVariants, containerStaggerVariants } from '../lib/animationVariants';
+import { cardEntranceVariants } from '../lib/animationVariants';
 import { 
   Layers, 
   Eye, 
   EyeOff, 
-  Sliders, 
   ArrowRight, 
   ShieldCheck, 
-  Info, 
   Sparkles, 
-  Wind, 
-  CloudRain, 
-  Droplets, 
-  Thermometer, 
-  Sun, 
-  Database, 
   Activity, 
   MapPin, 
   Search,
-  CheckCircle2,
   X,
   Compass,
   Radio,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Bell,
+  Volume2,
+  VolumeX,
+  Flame,
+  AlertTriangle,
+  Zap,
+  Sliders
 } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
+import AtmosphericAlertToast from '../components/AtmosphericAlertToast';
+import AtmosphericAlertCenterDrawer from '../components/AtmosphericAlertCenterDrawer';
 import { PRESET_LOCATIONS } from '../lib/nasaPowerService';
+import {
+  AtmosphericRule,
+  AtmosphericBreachEvent,
+  AtmosphericStationReading
+} from '../lib/atmosphericAlertTypes';
+import {
+  alertManager,
+  generateStationTelemetry
+} from '../services/atmosphericAlertService';
 
 interface EnvironmentalLayer {
   id: string;
@@ -64,10 +78,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily Continuous',
     nominalRange: '0 to 350+ µg/m³',
     thresholds: [
-      { label: 'Good (WHO Target)', value: '0 - 15 µg/m³', color: '#10b981' },
-      { label: 'Moderate', value: '15 - 35 µg/m³', color: '#eab308' },
-      { label: 'Unhealthy', value: '35 - 75 µg/m³', color: '#f97316' },
-      { label: 'Severe Inversion', value: '> 75 µg/m³', color: '#ef4444' }
+      { label: 'Good (WHO Target)', value: '0 - 15 µg/m³', color: '#35C98B' },
+      { label: 'Moderate', value: '15 - 35 µg/m³', color: '#F0B44D' },
+      { label: 'Unhealthy', value: '35 - 75 µg/m³', color: '#D28B71' },
+      { label: 'Severe Inversion', value: '> 75 µg/m³', color: '#F16C72' }
     ],
     gradient: 'linear-gradient(to right, #10b981 0%, #84cc16 20%, #eab308 40%, #f97316 60%, #ef4444 80%, #7e22ce 100%)',
     legendTicks: ['0', '15', '35', '75', '150+'],
@@ -90,10 +104,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily',
     nominalRange: '0.02 to 2.50',
     thresholds: [
-      { label: 'Clean Atmosphere', value: '< 0.10', color: '#06b6d4' },
-      { label: 'Moderate Haze', value: '0.10 - 0.35', color: '#eab308' },
-      { label: 'Dense Smog / Dust', value: '0.35 - 0.70', color: '#f97316' },
-      { label: 'Extreme Smoke Plume', value: '> 0.70', color: '#dc2626' }
+      { label: 'Clean Atmosphere', value: '< 0.10', color: '#A6B7D4' },
+      { label: 'Moderate Haze', value: '0.10 - 0.35', color: '#F0B44D' },
+      { label: 'Dense Smog / Dust', value: '0.35 - 0.70', color: '#D28B71' },
+      { label: 'Extreme Smoke Plume', value: '> 0.70', color: '#F16C72' }
     ],
     gradient: 'linear-gradient(to right, #06b6d4 0%, #3b82f6 30%, #eab308 60%, #f97316 80%, #dc2626 100%)',
     legendTicks: ['0.0', '0.2', '0.5', '1.0', '2.5'],
@@ -116,10 +130,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '1981–2025 Daily Continuous',
     nominalRange: '-40 °C to +52 °C',
     thresholds: [
-      { label: 'Sub-Zero', value: '< 0 °C', color: '#38bdf8' },
-      { label: 'Temperate', value: '10 - 24 °C', color: '#10b981' },
-      { label: 'Warm Subtropical', value: '25 - 34 °C', color: '#f59e0b' },
-      { label: 'Extreme Heatwave', value: '> 40 °C', color: '#ef4444' }
+      { label: 'Sub-Zero', value: '< 0 °C', color: '#A6B7D4' },
+      { label: 'Temperate', value: '10 - 24 °C', color: '#35C98B' },
+      { label: 'Warm Subtropical', value: '25 - 34 °C', color: '#F0B44D' },
+      { label: 'Extreme Heatwave', value: '> 40 °C', color: '#F16C72' }
     ],
     gradient: 'linear-gradient(to right, #0284c7 0%, #06b6d4 25%, #10b981 50%, #f59e0b 75%, #ef4444 100%)',
     legendTicks: ['-10°', '5°', '20°', '32°', '45°+'],
@@ -142,10 +156,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily',
     nominalRange: '0.2 to 28.0 m/s',
     thresholds: [
-      { label: 'Stagnant Calm (Hazardous)', value: '< 2.0 m/s', color: '#ef4444' },
-      { label: 'Light Breeze', value: '2.0 - 4.5 m/s', color: '#f59e0b' },
-      { label: 'Moderate Ventilation', value: '4.5 - 8.0 m/s', color: '#10b981' },
-      { label: 'High Atmospheric Advection', value: '> 8.0 m/s', color: '#06b6d4' }
+      { label: 'Stagnant Calm (Hazardous)', value: '< 2.0 m/s', color: '#F16C72' },
+      { label: 'Light Breeze', value: '2.0 - 4.5 m/s', color: '#F0B44D' },
+      { label: 'Moderate Ventilation', value: '4.5 - 8.0 m/s', color: '#35C98B' },
+      { label: 'High Atmospheric Advection', value: '> 8.0 m/s', color: '#A6B7D4' }
     ],
     gradient: 'linear-gradient(to right, #ef4444 0%, #f59e0b 30%, #10b981 65%, #06b6d4 100%)',
     legendTicks: ['0', '2', '5', '8', '15+'],
@@ -168,10 +182,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily',
     nominalRange: '0.0 to 95.0 mm/day',
     thresholds: [
-      { label: 'Zero Rain (Dry Atmosphere)', value: '0 mm/day', color: '#94a3b8' },
-      { label: 'Light Shower', value: '0.1 - 5 mm/day', color: '#38bdf8' },
-      { label: 'Moderate Rain (Washout Active)', value: '5 - 20 mm/day', color: '#0284c7' },
-      { label: 'Intense Monsoonal Deluge', value: '> 25 mm/day', color: '#6366f1' }
+      { label: 'Zero Rain (Dry Atmosphere)', value: '0 mm/day', color: '#838FA3' },
+      { label: 'Light Shower', value: '0.1 - 5 mm/day', color: '#A6B7D4' },
+      { label: 'Moderate Rain (Washout Active)', value: '5 - 20 mm/day', color: '#8296B5' },
+      { label: 'Intense Monsoonal Deluge', value: '> 25 mm/day', color: '#D28B71' }
     ],
     gradient: 'linear-gradient(to right, #334155 0%, #38bdf8 30%, #0284c7 65%, #6366f1 100%)',
     legendTicks: ['0', '2', '10', '25', '50+'],
@@ -194,10 +208,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily',
     nominalRange: '8% to 100%',
     thresholds: [
-      { label: 'Arid / Dry', value: '< 30%', color: '#f59e0b' },
-      { label: 'Optimal Human Comfort', value: '40 - 60%', color: '#10b981' },
-      { label: 'High Moisture (Hygroscopic Swelling)', value: '70 - 85%', color: '#06b6d4' },
-      { label: 'Saturated Fog / Smog Formation', value: '> 90%', color: '#8b5cf6' }
+      { label: 'Arid / Dry', value: '< 30%', color: '#F0B44D' },
+      { label: 'Optimal Human Comfort', value: '40 - 60%', color: '#35C98B' },
+      { label: 'High Moisture (Hygroscopic Swelling)', value: '70 - 85%', color: '#A6B7D4' },
+      { label: 'Saturated Fog / Smog Formation', value: '> 90%', color: '#D28B71' }
     ],
     gradient: 'linear-gradient(to right, #f59e0b 0%, #10b981 35%, #06b6d4 70%, #8b5cf6 100%)',
     legendTicks: ['10%', '35%', '60%', '80%', '100%'],
@@ -220,9 +234,9 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily',
     nominalRange: '0.08 to 0.82',
     thresholds: [
-      { label: 'Opaque Smog / Overcast', value: '< 0.30', color: '#64748b' },
-      { label: 'Moderate Transmissivity', value: '0.30 - 0.55', color: '#eab308' },
-      { label: 'Clear Sky Irradiance', value: '> 0.65', color: '#10b981' }
+      { label: 'Opaque Smog / Overcast', value: '< 0.30', color: '#838FA3' },
+      { label: 'Moderate Transmissivity', value: '0.30 - 0.55', color: '#F0B44D' },
+      { label: 'Clear Sky Irradiance', value: '> 0.65', color: '#35C98B' }
     ],
     gradient: 'linear-gradient(to right, #475569 0%, #64748b 30%, #eab308 70%, #facc15 100%)',
     legendTicks: ['0.1', '0.3', '0.5', '0.7', '0.8+'],
@@ -245,10 +259,10 @@ const INITIAL_LAYERS: EnvironmentalLayer[] = [
     temporalCoverage: '2001–2025 Daily',
     nominalRange: '0.02 to 0.98',
     thresholds: [
-      { label: 'Hyper-Arid (Dust Risk High)', value: '< 0.15', color: '#ef4444' },
-      { label: 'Dry Surface', value: '0.15 - 0.35', color: '#f59e0b' },
-      { label: 'Adequate Moisture', value: '0.35 - 0.70', color: '#10b981' },
-      { label: 'Saturated Soil', value: '> 0.70', color: '#06b6d4' }
+      { label: 'Hyper-Arid (Dust Risk High)', value: '< 0.15', color: '#F16C72' },
+      { label: 'Dry Surface', value: '0.15 - 0.35', color: '#F0B44D' },
+      { label: 'Adequate Moisture', value: '0.35 - 0.70', color: '#35C98B' },
+      { label: 'Saturated Soil', value: '> 0.70', color: '#A6B7D4' }
     ],
     gradient: 'linear-gradient(to right, #b45309 0%, #d97706 30%, #10b981 70%, #06b6d4 100%)',
     legendTicks: ['0.0', '0.2', '0.4', '0.7', '1.0'],
@@ -269,8 +283,134 @@ export default function VariableExplorer() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [testLocation, setTestLocation] = useState(PRESET_LOCATIONS[0]); // Nagpur default
 
+  // --- Real-time Notification & Threshold Monitoring State ---
+  const [rules, setRules] = useState<AtmosphericRule[]>(() => alertManager.getRules());
+  const [breaches, setBreaches] = useState<AtmosphericBreachEvent[]>(() => alertManager.getBreaches());
+  const [isAlertCenterOpen, setIsAlertCenterOpen] = useState(false);
+  const [isSoundMuted, setIsSoundMuted] = useState<boolean>(() => alertManager.isMuted());
+  const [isStreaming, setIsStreaming] = useState<boolean>(true);
+  const [streamTick, setStreamTick] = useState<number>(0);
+  
+  // Real-time live readings across reference stations
+  const [liveReadings, setLiveReadings] = useState<AtmosphericStationReading[]>(() => 
+    PRESET_LOCATIONS.map(station => generateStationTelemetry(station))
+  );
+
   const activeLayer = layers.find(l => l.id === selectedLayerId) || layers[0];
   const activeCount = layers.filter(l => l.isActive).length;
+
+  // Active breach counts
+  const unreadBreachesCount = breaches.filter(b => !b.acknowledged).length;
+  const criticalBreachesCount = breaches.filter(b => !b.acknowledged && b.severity === 'critical').length;
+
+  // Check if active layer currently has an unacknowledged breach
+  const activeLayerBreach = breaches.find(
+    b => !b.acknowledged && b.variableKey === activeLayer.variableKey
+  );
+
+  // Real-Time Telemetry Stream Loop (runs every 2.5s)
+  useEffect(() => {
+    if (!isStreaming) return;
+
+    const interval = setInterval(() => {
+      setStreamTick(t => t + 1);
+
+      // Generate new readings for preset stations
+      const updatedReadings = PRESET_LOCATIONS.map(station => 
+        generateStationTelemetry(station)
+      );
+      setLiveReadings(updatedReadings);
+
+      // Evaluate each station's reading against configured threshold rules
+      let detectedAny = false;
+      for (const reading of updatedReadings) {
+        const newEvents = alertManager.evaluateReading(reading);
+        if (newEvents.length > 0) {
+          detectedAny = true;
+        }
+      }
+
+      if (detectedAny) {
+        setBreaches([...alertManager.getBreaches()]);
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [isStreaming]);
+
+  // Current live metric for active layer at testLocation
+  const currentStationReading = liveReadings.find(r => r.locationName === testLocation.name) || liveReadings[0];
+  const currentMetricValue = currentStationReading 
+    ? (currentStationReading.metrics as any)[activeLayer.variableKey] ?? 0
+    : 0;
+
+  // Handlers for Alert Management
+  const handleAcknowledgeBreach = useCallback((id: string) => {
+    alertManager.acknowledgeBreach(id);
+    setBreaches([...alertManager.getBreaches()]);
+  }, []);
+
+  const handleAcknowledgeAll = useCallback(() => {
+    alertManager.acknowledgeAll();
+    setBreaches([...alertManager.getBreaches()]);
+  }, []);
+
+  const handleDismissToast = useCallback((id: string) => {
+    alertManager.dismissToast(id);
+    setBreaches([...alertManager.getBreaches()]);
+  }, []);
+
+  const handleClearBreaches = useCallback(() => {
+    alertManager.clearBreachHistory();
+    setBreaches([]);
+  }, []);
+
+  const handleToggleRule = useCallback((ruleId: string) => {
+    alertManager.toggleRule(ruleId);
+    setRules([...alertManager.getRules()]);
+  }, []);
+
+  const handleUpdateRule = useCallback((rule: AtmosphericRule) => {
+    alertManager.updateRule(rule);
+    setRules([...alertManager.getRules()]);
+  }, []);
+
+  const handleAddRule = useCallback((ruleData: Omit<AtmosphericRule, 'id'>) => {
+    alertManager.addRule(ruleData);
+    setRules([...alertManager.getRules()]);
+  }, []);
+
+  const handleDeleteRule = useCallback((ruleId: string) => {
+    alertManager.deleteRule(ruleId);
+    setRules([...alertManager.getRules()]);
+  }, []);
+
+  const handleResetRules = useCallback(() => {
+    const defaultRules = alertManager.resetRulesToDefault();
+    setRules([...defaultRules]);
+  }, []);
+
+  const handleToggleMute = useCallback(() => {
+    const nextState = !isSoundMuted;
+    alertManager.setMuted(nextState);
+    setIsSoundMuted(nextState);
+  }, [isSoundMuted]);
+
+  const handleTriggerSimulation = useCallback((type: 'pm25_inversion' | 'stagnation_calm' | 'heatwave' | 'dense_smog', stationName?: string) => {
+    alertManager.triggerSimulatedBreach(type, stationName || testLocation.name);
+    setBreaches([...alertManager.getBreaches()]);
+  }, [testLocation.name]);
+
+  const handleSelectLayerByVarKey = useCallback((variableKey: string) => {
+    const layer = layers.find(l => l.variableKey === variableKey);
+    if (layer) {
+      setSelectedLayerId(layer.id);
+    }
+  }, [layers]);
+
+  const handleOpenTrend = useCallback((variableKey: string) => {
+    navigate(`/trend-detective?param=${variableKey}`);
+  }, [navigate]);
 
   // Toggle layer visibility
   const toggleLayerActive = (id: string, e?: React.MouseEvent) => {
@@ -280,7 +420,7 @@ export default function VariableExplorer() {
 
   // Update layer opacity
   const setLayerOpacity = (id: string, opacity: number) => {
-    setLayers(prev => prev.map(l => l.id === id ? { ...l, opacity } : l));
+    setLayers(prev => prev.map(l => l.id === id ? { ...l, defaultOpacity: opacity } : l));
   };
 
   // Reset all layers
@@ -304,89 +444,162 @@ export default function VariableExplorer() {
 
   return (
     <PageContainer title="Environmental Layers Control">
-      <div className="space-y-5">
+      <div className="space-y-5 relative">
 
-        {/* 1. TOP MAC-STYLE TELEMETRY CONTROL BAR (Inspired by Ref 2 & 3) */}
+        {/* FLOATING HUD TOAST NOTIFICATIONS FOR REAL-TIME BREACHES */}
+        <AtmosphericAlertToast
+          breaches={breaches}
+          onAcknowledge={handleAcknowledgeBreach}
+          onDismiss={handleDismissToast}
+          onSelectLayer={handleSelectLayerByVarKey}
+          onOpenTrend={handleOpenTrend}
+          onOpenCenter={() => setIsAlertCenterOpen(true)}
+          isMuted={isSoundMuted}
+          onToggleMute={handleToggleMute}
+        />
+
+        {/* 1. TOP TELEMETRY CONTROL BAR & NOTIFICATION HUB TRIGGER */}
         <motion.div 
           variants={cardEntranceVariants}
           initial="hidden"
           animate="visible"
-          className="bg-[#050814] border border-[#152238] rounded-xl p-4 shadow-2xl relative overflow-hidden"
+          className="bg-[#232A3D] border border-[#48516A] rounded-xl p-4 shadow-xl relative overflow-hidden"
         >
-          {/* Subtle Cyber Grid Glow */}
-          <div className="absolute inset-0 bg-radial from-cyan-500/5 via-transparent to-transparent pointer-events-none"></div>
-
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
             {/* Left: Window Dots & Header */}
             <div className="flex items-center gap-3">
               {/* Mac Traffic Lights */}
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className="w-3 h-3 rounded-full bg-red-500/90 inline-block shadow-sm"></span>
-                <span className="w-3 h-3 rounded-full bg-yellow-500/90 inline-block shadow-sm"></span>
-                <span className="w-3 h-3 rounded-full bg-emerald-500/90 inline-block shadow-sm"></span>
+                <span className="w-3 h-3 rounded-full bg-[#F16C72] inline-block shadow-sm"></span>
+                <span className="w-3 h-3 rounded-full bg-[#F0B44D] inline-block shadow-sm"></span>
+                <span className="w-3 h-3 rounded-full bg-[#35C98B] inline-block shadow-sm"></span>
               </div>
 
-              <div className="h-5 w-px bg-[#1e2f4d] hidden sm:block"></div>
+              <div className="h-5 w-px bg-[#48516A] hidden sm:block"></div>
 
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-cyan-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                    <Radio className="w-3 h-3 text-cyan-400 animate-pulse" />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-mono text-[#A6B7D4] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                    <Radio className="w-3 h-3 text-[#A6B7D4] animate-pulse" />
                     NASA Earth Observing System (EOS)
                   </span>
-                  <span className="px-1.5 py-0.5 bg-cyan-950/80 text-cyan-300 text-[9px] font-mono rounded border border-cyan-700/60 font-semibold">
+                  <span className="px-1.5 py-0.5 bg-[#1D2436] text-[#A6B7D4] text-[9px] font-mono rounded border border-[#48516A] font-semibold">
                     ACTIVE LAYERS: {activeCount} / {layers.length}
                   </span>
+                  {/* Live Stream Ticker Indicator */}
+                  <span className={`px-2 py-0.5 text-[9px] font-mono rounded border flex items-center gap-1 font-bold ${
+                    isStreaming 
+                      ? 'bg-[#35C98B]/10 border-[#35C98B]/40 text-[#35C98B]' 
+                      : 'bg-[#1D2436] border-[#48516A] text-[#838FA3]'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-[#35C98B] animate-pulse' : 'bg-[#838FA3]'}`}></span>
+                    <span>{isStreaming ? `LIVE STREAM (2.5s · #${streamTick})` : 'STREAM PAUSED'}</span>
+                  </span>
                 </div>
-                <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-0.5">
+                <h1 className="text-lg sm:text-xl font-bold text-[#F0EBDD] tracking-tight flex items-center gap-2 mt-0.5">
                   <span>Environmental & Atmospheric Layers Deck</span>
-                  <span className="text-xs font-mono font-normal text-slate-400 hidden sm:inline">
-                    · Multi-Sensor Satellite Blending Engine
+                  <span className="text-xs font-mono font-normal text-[#B5BDCC] hidden sm:inline">
+                    · Real-Time Threshold Detection Engine
                   </span>
                 </h1>
               </div>
             </div>
 
-            {/* Right: Quick Actions & Presets */}
+            {/* Right: Notification Center Trigger & Quick Actions */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+              
+              {/* PRIMARY NOTIFICATION SYSTEM BUTTON */}
+              <button
+                onClick={() => setIsAlertCenterOpen(true)}
+                className={`px-3 py-1.5 rounded-lg border font-bold flex items-center gap-2 transition-all cursor-pointer relative shadow-md ${
+                  unreadBreachesCount > 0
+                    ? criticalBreachesCount > 0
+                      ? 'bg-[#F16C72]/15 text-[#F16C72] border-[#F16C72] ring-1 ring-[#F16C72]/30'
+                      : 'bg-[#F0B44D]/15 text-[#F0B44D] border-[#F0B44D] ring-1 ring-[#F0B44D]/30'
+                    : 'bg-[#1D2436] text-[#A6B7D4] border-[#48516A] hover:bg-[#353D55]'
+                }`}
+                title="Open Atmospheric Breach Notification Center"
+              >
+                <div className="relative">
+                  <Bell className={`w-4 h-4 ${unreadBreachesCount > 0 ? 'text-[#F16C72] animate-bounce' : 'text-[#A6B7D4]'}`} />
+                  {unreadBreachesCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-[#F16C72] animate-ping"></span>
+                  )}
+                </div>
+                <span>
+                  {unreadBreachesCount > 0 
+                    ? `${unreadBreachesCount} Threshold ${unreadBreachesCount === 1 ? 'Alert' : 'Alerts'}` 
+                    : 'Alerts & Rules'}
+                </span>
+                {unreadBreachesCount > 0 && (
+                  <span className="px-1.5 py-0.2 bg-[#F16C72] text-[#171B2B] rounded text-[10px] font-extrabold">
+                    {unreadBreachesCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Quick Breach Simulation Test Trigger */}
+              <button
+                onClick={() => handleTriggerSimulation('pm25_inversion')}
+                title="Test real-time alert trigger: inject simulated PM2.5 inversion spike"
+                className="px-2.5 py-1.5 bg-[#1D2436] hover:bg-[#353D55] text-[#F16C72] border border-[#F16C72]/40 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Flame className="w-3.5 h-3.5 text-[#F16C72]" />
+                <span className="hidden sm:inline">Test Inversion Alert</span>
+                <span className="sm:hidden">Test Alert</span>
+              </button>
+
+              {/* Sound Toggle */}
+              <button
+                onClick={handleToggleMute}
+                title={isSoundMuted ? "Unmute alert chime" : "Mute alert chime"}
+                className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                  !isSoundMuted 
+                    ? 'bg-[#353D55] border-[#A6B7D4]/50 text-[#A6B7D4] hover:bg-[#2B3349]' 
+                    : 'bg-[#1D2436] border-[#2D354A] text-[#838FA3] hover:text-[#F0EBDD]'
+                }`}
+              >
+                {isSoundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+
               <button
                 onClick={activateAllLayers}
-                className="px-2.5 py-1.5 bg-[#091122] hover:bg-[#0e1a35] text-cyan-300 border border-cyan-500/40 rounded-lg transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 bg-[#1D2436] hover:bg-[#353D55] text-[#A6B7D4] border border-[#48516A] rounded-lg transition-colors cursor-pointer"
               >
                 Enable All
               </button>
               <button
                 onClick={clearAllLayers}
-                className="px-2.5 py-1.5 bg-[#091122] hover:bg-[#0e1a35] text-slate-400 hover:text-white border border-[#1a2844] rounded-lg transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 bg-[#1D2436] hover:bg-[#353D55] text-[#B5BDCC] hover:text-[#F0EBDD] border border-[#48516A] rounded-lg transition-colors cursor-pointer"
               >
                 Clear All
               </button>
               <Link
                 to="/earth-explorer"
-                className="px-3.5 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-lg transition-all shadow-md shadow-cyan-950/50 flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 bg-[#A6B7D4] hover:bg-[#b8c7e0] text-[#171B2B] font-bold rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
               >
-                <Compass className="w-3.5 h-3.5 text-slate-950" />
-                <span>View on Geospatial Map</span>
+                <Compass className="w-3.5 h-3.5 text-[#171B2B]" />
+                <span>Geospatial Map</span>
               </Link>
             </div>
           </div>
 
           {/* Sub-toolbar: Search & Category Tabs */}
-          <div className="mt-4 pt-3 border-t border-[#152238] flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="mt-4 pt-3 border-t border-[#48516A] flex flex-col md:flex-row md:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#838FA3]" />
               <input
                 type="text"
                 placeholder="Search atmospheric layers, sensors, or units..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#081020] border border-[#192742] rounded-lg pl-9 pr-3 py-1.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/80 transition-colors"
+                className="w-full bg-[#1D2436] border border-[#48516A] rounded-lg pl-9 pr-3 py-1.5 text-xs font-mono text-[#F0EBDD] placeholder-[#838FA3] focus:outline-none focus:border-[#A6B7D4] transition-colors"
               />
               {searchQuery && (
                 <button 
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#838FA3] hover:text-[#F0EBDD]"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -406,8 +619,8 @@ export default function VariableExplorer() {
                   onClick={() => setCategoryFilter(cat.id)}
                   className={`px-3 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                     categoryFilter === cat.id
-                      ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/30'
-                      : 'bg-[#081020] text-slate-400 hover:text-white hover:bg-[#0c1830] border border-[#152238]'
+                      ? 'bg-[#A6B7D4] text-[#171B2B] font-bold shadow-sm'
+                      : 'bg-[#1D2436] text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#353D55] border border-[#48516A]'
                   }`}
                 >
                   {cat.label}
@@ -420,16 +633,16 @@ export default function VariableExplorer() {
         {/* 2. MAIN WORKSPACE: DUAL SPLIT (LAYER CARDS DECK & DEEP DIVE TELEMETRY) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           
-          {/* LEFT COLUMN: INTERACTIVE LAYER STACK (Matching Ref 2 & 3) */}
+          {/* LEFT COLUMN: INTERACTIVE LAYER STACK */}
           <motion.div 
             variants={cardEntranceVariants}
             initial="hidden"
             animate="visible"
             className="lg:col-span-5 space-y-3"
           >
-            <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
-              <span className="font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="flex items-center justify-between text-xs font-mono text-[#B5BDCC] px-1">
+              <span className="font-bold uppercase tracking-wider text-[#A6B7D4] flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#A6B7D4]" />
                 <span>Selectable Layer Deck</span>
               </span>
               <span>{filteredLayers.length} Available</span>
@@ -438,38 +651,49 @@ export default function VariableExplorer() {
             <div className="space-y-2.5 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
               {filteredLayers.map((layer) => {
                 const isSelected = layer.id === activeLayer.id;
+                const layerBreach = breaches.find(b => !b.acknowledged && b.variableKey === layer.variableKey);
+
                 return (
                   <div
                     key={layer.id}
                     onClick={() => setSelectedLayerId(layer.id)}
                     className={`rounded-xl border p-3.5 transition-all cursor-pointer relative overflow-hidden ${
                       isSelected
-                        ? 'bg-[#091328] border-cyan-500/80 shadow-lg shadow-cyan-950/60 ring-1 ring-cyan-500/30'
-                        : 'bg-[#060b18] border-[#14213d] hover:border-[#1e345e] hover:bg-[#081022]'
+                        ? 'bg-[#353D55] border-[#A6B7D4] shadow-lg ring-1 ring-[#A6B7D4]/30'
+                        : 'bg-[#232A3D] border-[#48516A] hover:border-[#64718A] hover:bg-[#2B3349]'
                     }`}
                   >
                     {/* Active Layer Side Accent Strip */}
                     {layer.isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-400 to-emerald-400"></div>
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#A6B7D4]"></div>
                     )}
 
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-cyan-400 bg-cyan-950/90 px-1.5 py-0.5 rounded border border-cyan-800/60">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-bold text-[#A6B7D4] bg-[#1D2436] px-1.5 py-0.5 rounded border border-[#48516A]">
                             {layer.variableKey}
                           </span>
-                          <span className="text-[10px] font-mono text-slate-500 uppercase truncate">
+                          <span className="text-[10px] font-mono text-[#838FA3] uppercase truncate">
                             {layer.category}
                           </span>
+                          
+                          {/* Live Breach Alert Badge on Card if active */}
+                          {layerBreach && (
+                            <span className="px-1.5 py-0.2 bg-[#F16C72]/15 text-[#F16C72] border border-[#F16C72] rounded font-mono text-[9px] font-bold flex items-center gap-1 animate-pulse">
+                              <AlertTriangle className="w-2.5 h-2.5 text-[#F16C72]" />
+                              <span>BREACH DETECTED</span>
+                            </span>
+                          )}
                         </div>
-                        <h3 className="text-sm font-semibold text-white tracking-tight mt-1 truncate">
+
+                        <h3 className="text-sm font-semibold text-[#F0EBDD] tracking-tight mt-1 truncate">
                           {layer.name}
                         </h3>
-                        <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400 mt-1">
-                          <span>Unit: <strong className="text-white">{layer.units}</strong></span>
+                        <div className="flex items-center gap-3 text-[11px] font-mono text-[#B5BDCC] mt-1">
+                          <span>Unit: <strong className="text-[#F0EBDD]">{layer.units}</strong></span>
                           <span>·</span>
-                          <span className="text-emerald-400 font-semibold">{layer.platform.split(' ')[0]} L3</span>
+                          <span className="text-[#35C98B] font-semibold">{layer.platform.split(' ')[0]} L3</span>
                         </div>
                       </div>
 
@@ -478,8 +702,8 @@ export default function VariableExplorer() {
                         onClick={(e) => toggleLayerActive(layer.id, e)}
                         className={`p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 border ${
                           layer.isActive
-                            ? 'bg-emerald-950/80 text-emerald-400 border-emerald-600/60 hover:bg-emerald-900'
-                            : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'
+                            ? 'bg-[#35C98B]/15 text-[#35C98B] border-[#35C98B]/50 hover:bg-[#35C98B]/25'
+                            : 'bg-[#1D2436] text-[#838FA3] border-[#2D354A] hover:text-[#F0EBDD]'
                         }`}
                         title={layer.isActive ? "Hide Layer" : "Show Layer"}
                       >
@@ -493,18 +717,18 @@ export default function VariableExplorer() {
                         className="h-2 rounded-full w-full opacity-90 shadow-inner"
                         style={{ background: layer.gradient }}
                       ></div>
-                      <div className="flex justify-between text-[9px] font-mono text-slate-500">
+                      <div className="flex justify-between text-[9px] font-mono text-[#838FA3]">
                         <span>{layer.legendTicks[0]}</span>
                         <span>{layer.legendTicks[Math.floor(layer.legendTicks.length / 2)]}</span>
                         <span>{layer.legendTicks[layer.legendTicks.length - 1]}</span>
                       </div>
                     </div>
 
-                    {/* Opacity Control Slider (matching IntMap & Meteo Ref 2 & 3) */}
+                    {/* Opacity Control Slider */}
                     {layer.isActive && (
-                      <div className="mt-2.5 pt-2 border-t border-[#152238] flex items-center justify-between gap-3 text-[11px] font-mono text-slate-400">
-                        <span className="flex items-center gap-1 text-slate-300">
-                          <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
+                      <div className="mt-2.5 pt-2 border-t border-[#48516A] flex items-center justify-between gap-3 text-[11px] font-mono text-[#B5BDCC]">
+                        <span className="flex items-center gap-1 text-[#F0EBDD]">
+                          <SlidersHorizontal className="w-3 h-3 text-[#A6B7D4]" />
                           <span>Opacity</span>
                         </span>
                         <div className="flex items-center gap-2 flex-1 max-w-[140px]">
@@ -515,9 +739,9 @@ export default function VariableExplorer() {
                             value={layer.defaultOpacity}
                             onChange={(e) => setLayerOpacity(layer.id, parseInt(e.target.value))}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full accent-cyan-400 h-1 bg-slate-800 rounded-lg cursor-pointer"
+                            className="w-full accent-[#A6B7D4] h-1 bg-[#1D2436] rounded-lg cursor-pointer"
                           />
-                          <span className="font-bold text-white w-7 text-right">
+                          <span className="font-bold text-[#F0EBDD] w-7 text-right">
                             {layer.defaultOpacity}%
                           </span>
                         </div>
@@ -529,7 +753,7 @@ export default function VariableExplorer() {
             </div>
           </motion.div>
 
-          {/* RIGHT COLUMN: DEEP DIVE SPECIFICATION & ATMOSPHERIC COUPLING */}
+          {/* RIGHT COLUMN: DEEP DIVE SPECIFICATION & REAL-TIME THRESHOLD MONITOR */}
           <motion.div 
             variants={cardEntranceVariants}
             initial="hidden"
@@ -538,23 +762,23 @@ export default function VariableExplorer() {
           >
             
             {/* Active Layer Dossier Card */}
-            <div className="bg-[#050814] border border-[#152238] rounded-xl p-5 shadow-2xl space-y-5 relative">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-5 shadow-xl space-y-5 relative">
               
               {/* Header with Title & Quick Investigation Button */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-[#152238] pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-[#48516A] pb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#A6B7D4] bg-[#232A3D] px-2 py-0.5 rounded border border-[#48516A]">
                       {activeLayer.category}
                     </span>
-                    <span className="text-xs font-mono text-slate-500">
+                    <span className="text-xs font-mono text-[#838FA3]">
                       IDENTIFIER: {activeLayer.variableKey}
                     </span>
                   </div>
-                  <h2 className="text-xl font-bold text-white tracking-tight">
+                  <h2 className="text-xl font-bold text-[#F0EBDD] tracking-tight">
                     {activeLayer.name}
                   </h2>
-                  <p className="text-xs text-slate-300 leading-relaxed pt-0.5">
+                  <p className="text-xs text-[#B5BDCC] leading-relaxed pt-0.5">
                     {activeLayer.description}
                   </p>
                 </div>
@@ -562,59 +786,186 @@ export default function VariableExplorer() {
                 <div className="flex flex-col gap-2 shrink-0">
                   <button
                     onClick={() => navigate(`/trend-detective?param=${activeLayer.variableKey}`)}
-                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs rounded-lg transition-all shadow-md shadow-cyan-950/60 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 bg-[#A6B7D4] hover:bg-[#b8c7e0] text-[#171B2B] font-bold text-xs rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Activity className="w-3.5 h-3.5 text-slate-950" />
+                    <Activity className="w-3.5 h-3.5 text-[#171B2B]" />
                     <span>Investigate Trend</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-950" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#171B2B]" />
                   </button>
 
                   <button
                     onClick={() => navigate(`/ai-insights?param=${activeLayer.variableKey}`)}
-                    className="px-3.5 py-1.5 bg-[#091122] hover:bg-[#0f1b34] text-purple-300 border border-purple-500/40 font-mono text-[11px] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-[#232A3D] hover:bg-[#2B3349] text-[#D28B71] border border-[#D28B71]/50 font-mono text-[11px] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Sparkles className="w-3 h-3 text-purple-400" />
+                    <Sparkles className="w-3 h-3 text-[#D28B71]" />
                     <span>AI Climate Intelligence</span>
                   </button>
                 </div>
               </div>
 
-              {/* Technical Specifications Matrix (Ref 1 & 3) */}
+              {/* TECHNICAL SPECIFICATIONS MATRIX */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
-                <div className="bg-[#080f1e] p-3 rounded-lg border border-[#17253d]">
-                  <div className="text-[10px] uppercase text-slate-500">Physical Unit</div>
-                  <div className="text-sm font-bold text-white mt-0.5">{activeLayer.units}</div>
+                <div className="bg-[#232A3D] p-3 rounded-lg border border-[#48516A]">
+                  <div className="text-[10px] uppercase text-[#838FA3]">Physical Unit</div>
+                  <div className="text-sm font-bold text-[#F0EBDD] mt-0.5">{activeLayer.units}</div>
                 </div>
-                <div className="bg-[#080f1e] p-3 rounded-lg border border-[#17253d]">
-                  <div className="text-[10px] uppercase text-slate-500">Nominal Range</div>
-                  <div className="text-sm font-bold text-amber-300 mt-0.5">{activeLayer.nominalRange}</div>
+                <div className="bg-[#232A3D] p-3 rounded-lg border border-[#48516A]">
+                  <div className="text-[10px] uppercase text-[#838FA3]">Nominal Range</div>
+                  <div className="text-sm font-bold text-[#F0B44D] mt-0.5">{activeLayer.nominalRange}</div>
                 </div>
-                <div className="bg-[#080f1e] p-3 rounded-lg border border-[#17253d]">
-                  <div className="text-[10px] uppercase text-slate-500">Native Resolution</div>
-                  <div className="text-xs font-bold text-cyan-300 mt-1 truncate">{activeLayer.resolution}</div>
+                <div className="bg-[#232A3D] p-3 rounded-lg border border-[#48516A]">
+                  <div className="text-[10px] uppercase text-[#838FA3]">Native Resolution</div>
+                  <div className="text-xs font-bold text-[#A6B7D4] mt-1 truncate">{activeLayer.resolution}</div>
                 </div>
-                <div className="bg-[#080f1e] p-3 rounded-lg border border-[#17253d]">
-                  <div className="text-[10px] uppercase text-slate-500">Observing Sensors</div>
-                  <div className="text-xs text-slate-300 mt-0.5 font-sans truncate">{activeLayer.sensor}</div>
+                <div className="bg-[#232A3D] p-3 rounded-lg border border-[#48516A]">
+                  <div className="text-[10px] uppercase text-[#838FA3]">Observing Sensors</div>
+                  <div className="text-xs text-[#B5BDCC] mt-0.5 font-sans truncate">{activeLayer.sensor}</div>
                 </div>
-                <div className="bg-[#080f1e] p-3 rounded-lg border border-[#17253d]">
-                  <div className="text-[10px] uppercase text-slate-500">Assimilation Engine</div>
-                  <div className="text-xs text-slate-300 mt-0.5 font-sans truncate">{activeLayer.platform}</div>
+                <div className="bg-[#232A3D] p-3 rounded-lg border border-[#48516A]">
+                  <div className="text-[10px] uppercase text-[#838FA3]">Assimilation Engine</div>
+                  <div className="text-xs text-[#B5BDCC] mt-0.5 font-sans truncate">{activeLayer.platform}</div>
                 </div>
-                <div className="bg-[#080f1e] p-3 rounded-lg border border-[#17253d]">
-                  <div className="text-[10px] uppercase text-slate-500">Temporal Period</div>
-                  <div className="text-xs text-emerald-400 mt-0.5">{activeLayer.temporalCoverage}</div>
+                <div className="bg-[#232A3D] p-3 rounded-lg border border-[#48516A]">
+                  <div className="text-[10px] uppercase text-[#838FA3]">Temporal Period</div>
+                  <div className="text-xs text-[#35C98B] mt-0.5">{activeLayer.temporalCoverage}</div>
                 </div>
               </div>
 
-              {/* Spectral Legend & Severity Scale Bar (matching Reference 3 & 4) */}
-              <div className="bg-[#080f1e] p-4 rounded-lg border border-[#17253d] space-y-3">
+              {/* REAL-TIME THRESHOLD & TELEMETRY MONITOR FOR ACTIVE LAYER */}
+              <div className="bg-[#232A3D] border border-[#48516A] rounded-xl p-4 space-y-3.5 shadow-md relative overflow-hidden">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-[#1D2436] border border-[#48516A] text-[#A6B7D4]">
+                      <Radio className="w-4 h-4 animate-pulse text-[#A6B7D4]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#F0EBDD] flex items-center gap-1.5">
+                        <span>Real-Time Atmospheric Threshold Monitor</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#35C98B] animate-ping"></span>
+                      </h4>
+                      <p className="text-[10px] font-mono text-[#B5BDCC]">
+                        Station: <strong className="text-[#A6B7D4]">{testLocation.name}</strong> ({testLocation.region})
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions for this layer's thresholds */}
+                  <div className="flex items-center gap-1.5 text-xs font-mono">
+                    <button
+                      onClick={() => {
+                        if (activeLayer.variableKey === 'PM25') handleTriggerSimulation('pm25_inversion');
+                        else if (activeLayer.variableKey === 'WS10M') handleTriggerSimulation('stagnation_calm');
+                        else if (activeLayer.variableKey === 'T2M') handleTriggerSimulation('heatwave');
+                        else handleTriggerSimulation('dense_smog');
+                      }}
+                      className="px-2.5 py-1 bg-[#F16C72]/15 hover:bg-[#F16C72]/25 border border-[#F16C72]/50 text-[#F16C72] rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Flame className="w-3 h-3 text-[#F16C72]" />
+                      <span>Test Breach</span>
+                    </button>
+                    <button
+                      onClick={() => setIsAlertCenterOpen(true)}
+                      className="px-2.5 py-1 bg-[#1D2436] hover:bg-[#353D55] border border-[#48516A] text-[#A6B7D4] rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sliders className="w-3 h-3" />
+                      <span>Manage Rules</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Telemetry Gauge & Threshold Comparison */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-[#1D2436] p-3 rounded-lg border border-[#2D354A]">
+                  
+                  {/* Left: Current Live Telemetry */}
+                  <div className="sm:col-span-5 space-y-1">
+                    <span className="text-[10px] font-mono uppercase text-[#838FA3]">Current In-Situ Stream:</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black font-mono text-[#A6B7D4] tracking-tight">
+                        {currentMetricValue}
+                      </span>
+                      <span className="text-xs font-mono text-[#B5BDCC] font-bold">{activeLayer.units}</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#838FA3] flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-[#35C98B]" />
+                      <span>Updated 2.5s ago · MERRA-2 L3</span>
+                    </span>
+                  </div>
+
+                  {/* Middle / Right: Active Thresholds Status */}
+                  <div className="sm:col-span-7 space-y-1.5 border-t sm:border-t-0 sm:border-l border-[#48516A] pt-2 sm:pt-0 sm:pl-3">
+                    <span className="text-[10px] font-mono uppercase text-[#B5BDCC] font-semibold block">
+                      Active Breach Rules for {activeLayer.variableKey}:
+                    </span>
+
+                    {rules.filter(r => r.variableKey === activeLayer.variableKey && r.enabled).length === 0 ? (
+                      <div className="text-[11px] font-mono text-[#838FA3] italic">
+                        No active threshold rules set for this variable.
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {rules
+                          .filter(r => r.variableKey === activeLayer.variableKey && r.enabled)
+                          .map(rule => {
+                            const isBreached = 
+                              (rule.condition === '>' && currentMetricValue > rule.thresholdValue) ||
+                              (rule.condition === '<' && currentMetricValue < rule.thresholdValue) ||
+                              (rule.condition === '>=' && currentMetricValue >= rule.thresholdValue) ||
+                              (rule.condition === '<=' && currentMetricValue <= rule.thresholdValue);
+
+                            return (
+                              <div 
+                                key={rule.id}
+                                className={`flex items-center justify-between text-xs font-mono p-1.5 rounded border transition-colors ${
+                                  isBreached
+                                    ? 'bg-[#F16C72]/15 border-[#F16C72] text-[#F16C72] animate-pulse'
+                                    : 'bg-[#232A3D] border-[#48516A] text-[#F0EBDD]'
+                                }`}
+                              >
+                                <div className="flex items-center gap-1.5 truncate">
+                                  <span className={`w-2 h-2 rounded-full ${
+                                    isBreached 
+                                      ? 'bg-[#F16C72]' 
+                                      : rule.severity === 'critical' 
+                                        ? 'bg-[#F16C72]' 
+                                        : rule.severity === 'warning' 
+                                          ? 'bg-[#F0B44D]' 
+                                          : 'bg-[#A6B7D4]'
+                                  }`}></span>
+                                  <span className="truncate">{rule.title}</span>
+                                </div>
+                                <span className="font-bold shrink-0 ml-2">
+                                  {isBreached ? '⚠️ BREACHED' : `Limit: ${rule.condition} ${rule.thresholdValue} ${rule.units}`}
+                                </span>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Notice */}
+                {activeLayerBreach && (
+                  <div className="bg-[#F16C72]/15 border border-[#F16C72]/60 p-3 rounded-lg flex items-start gap-2.5 text-xs text-[#F0EBDD]">
+                    <AlertTriangle className="w-4 h-4 text-[#F16C72] shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="font-mono text-[#F0EBDD] block">Active Threshold Warning: {activeLayerBreach.title}</strong>
+                      <p className="text-[11px] text-[#B5BDCC] mt-0.5 leading-relaxed">
+                        {activeLayerBreach.boundaryPhysicsExplanation}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Spectral Legend & Severity Scale Bar */}
+              <div className="bg-[#232A3D] p-4 rounded-lg border border-[#48516A] space-y-3">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                  <span className="font-bold text-[#F0EBDD] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#A6B7D4]"></span>
                     <span>Spectral Measurement Color Ramp</span>
                   </span>
-                  <span className="text-slate-400">Scale: {activeLayer.units}</span>
+                  <span className="text-[#B5BDCC]">Scale: {activeLayer.units}</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -622,25 +973,25 @@ export default function VariableExplorer() {
                     className="h-3.5 rounded-lg w-full shadow-md"
                     style={{ background: activeLayer.gradient }}
                   ></div>
-                  <div className="flex justify-between text-[10px] font-mono text-slate-400 font-semibold px-0.5">
+                  <div className="flex justify-between text-[10px] font-mono text-[#B5BDCC] font-semibold px-0.5">
                     {activeLayer.legendTicks.map((tick, i) => (
                       <span key={i}>{tick}</span>
                     ))}
                   </div>
                 </div>
 
-                {/* Level Categorization Tiles (Ref 1 Amoy levels) */}
+                {/* Level Categorization Tiles */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                   {activeLayer.thresholds.map((t, idx) => (
                     <div 
                       key={idx}
-                      className="bg-[#060b14] border border-[#17253d] p-2 rounded text-left font-mono"
+                      className="bg-[#1D2436] border border-[#2D354A] p-2 rounded text-left font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }}></span>
-                        <span className="text-[10px] text-slate-300 font-bold truncate">{t.label}</span>
+                        <span className="text-[10px] text-[#B5BDCC] font-bold truncate">{t.label}</span>
                       </div>
-                      <div className="text-[11px] font-bold text-white mt-0.5">{t.value}</div>
+                      <div className="text-[11px] font-bold text-[#F0EBDD] mt-0.5">{t.value}</div>
                     </div>
                   ))}
                 </div>
@@ -648,23 +999,23 @@ export default function VariableExplorer() {
 
               {/* Atmospheric Boundary Layer Dynamics Callout */}
               <div className="space-y-2">
-                <h4 className="text-xs font-mono uppercase tracking-wider text-cyan-300 font-semibold flex items-center gap-1.5">
-                  <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                <h4 className="text-xs font-mono uppercase tracking-wider text-[#A6B7D4] font-semibold flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-[#A6B7D4]" />
                   <span>Boundary Layer Dynamics & Atmospheric Physics</span>
                 </h4>
-                <div className="bg-[#080f1e] p-4 rounded-lg border border-[#17253d] text-xs text-slate-300 leading-relaxed font-sans">
+                <div className="bg-[#232A3D] p-4 rounded-lg border border-[#48516A] text-xs text-[#B5BDCC] leading-relaxed font-sans">
                   {activeLayer.boundaryPhysics}
                 </div>
               </div>
 
               {/* Public Health & Scientific Guidance */}
-              <div className="bg-gradient-to-r from-emerald-950/30 to-cyan-950/30 border border-emerald-500/30 p-4 rounded-lg flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="bg-[#232A3D] border border-[#35C98B]/40 p-4 rounded-lg flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#35C98B] shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <div className="text-xs font-bold text-emerald-300 font-mono uppercase tracking-wider">
+                  <div className="text-xs font-bold text-[#35C98B] font-mono uppercase tracking-wider">
                     Scientific & Public Health Benchmark
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs text-[#B5BDCC] leading-relaxed">
                     {activeLayer.healthImpact}
                   </p>
                 </div>
@@ -673,39 +1024,74 @@ export default function VariableExplorer() {
             </div>
 
             {/* Quick Test Station Inspector (Nagpur vs Global) */}
-            <div className="bg-[#050814] border border-[#152238] rounded-xl p-4 shadow-xl space-y-3">
+            <div className="bg-[#232A3D] border border-[#48516A] rounded-xl p-4 shadow-xl space-y-3">
               <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-white font-bold flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-[#F0EBDD] font-bold flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#A6B7D4]" />
                   <span>Probe Layer at Reference Atmospheric Stations</span>
                 </span>
-                <span className="text-slate-500 text-[10px]">NASA POWER In-Situ Grid</span>
+                <span className="text-[#838FA3] text-[10px]">NASA POWER In-Situ Grid</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {PRESET_LOCATIONS.slice(0, 4).map(loc => (
-                  <button
-                    key={loc.name}
-                    onClick={() => setTestLocation(loc)}
-                    className={`p-2.5 rounded-lg border text-left font-mono transition-all cursor-pointer ${
-                      testLocation.name === loc.name
-                        ? 'bg-cyan-950/80 border-cyan-500 text-white shadow-md shadow-cyan-950/60'
-                        : 'bg-[#080f1e] border-[#17253d] text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <div className="text-[10px] text-cyan-400 font-bold uppercase">{loc.region}</div>
-                    <div className="text-xs font-bold text-white truncate">{loc.name}</div>
-                    <div className="text-[10px] text-slate-500 mt-1">
-                      {loc.lat.toFixed(2)}°N, {loc.lon.toFixed(2)}°E
-                    </div>
-                  </button>
-                ))}
+                {PRESET_LOCATIONS.slice(0, 4).map(loc => {
+                  const stationReading = liveReadings.find(r => r.locationName === loc.name);
+                  const metricVal = stationReading ? (stationReading.metrics as any)[activeLayer.variableKey] : undefined;
+
+                  return (
+                    <button
+                      key={loc.name}
+                      onClick={() => setTestLocation(loc)}
+                      className={`p-2.5 rounded-lg border text-left font-mono transition-all cursor-pointer ${
+                        testLocation.name === loc.name
+                          ? 'bg-[#353D55] border-[#A6B7D4] text-[#F0EBDD] shadow-sm'
+                          : 'bg-[#1D2436] border-[#2D354A] text-[#B5BDCC] hover:text-[#F0EBDD]'
+                      }`}
+                    >
+                      <div className="text-[10px] text-[#A6B7D4] font-bold uppercase">{loc.region}</div>
+                      <div className="text-xs font-bold text-[#F0EBDD] truncate">{loc.name}</div>
+                      {typeof metricVal === 'number' && (
+                        <div className="text-[11px] font-bold text-[#D28B71] mt-0.5">
+                          {metricVal} {activeLayer.units}
+                        </div>
+                      )}
+                      <div className="text-[10px] text-[#838FA3] mt-1">
+                        {loc.lat.toFixed(2)}°N, {loc.lon.toFixed(2)}°E
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
           </motion.div>
 
         </div>
+
+        {/* NOTIFICATION HUB & THRESHOLD RULES DRAWER */}
+        <AtmosphericAlertCenterDrawer
+          isOpen={isAlertCenterOpen}
+          onClose={() => setIsAlertCenterOpen(false)}
+          rules={rules}
+          breaches={breaches}
+          liveReadings={liveReadings}
+          onToggleRule={handleToggleRule}
+          onUpdateRule={handleUpdateRule}
+          onAddRule={handleAddRule}
+          onDeleteRule={handleDeleteRule}
+          onResetRules={handleResetRules}
+          onAcknowledgeBreach={handleAcknowledgeBreach}
+          onAcknowledgeAll={handleAcknowledgeAll}
+          onClearBreaches={handleClearBreaches}
+          onSelectLayer={handleSelectLayerByVarKey}
+          onOpenTrend={handleOpenTrend}
+          onTriggerSimulation={handleTriggerSimulation}
+          isMuted={isSoundMuted}
+          onToggleMute={handleToggleMute}
+          isStreaming={isStreaming}
+          onToggleStreaming={() => setIsStreaming(!isStreaming)}
+          onRequestDesktopPermission={() => alertManager.requestDesktopPermission()}
+        />
 
       </div>
     </PageContainer>

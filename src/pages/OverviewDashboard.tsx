@@ -1,19 +1,22 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
-  AreaChart, 
-  Area, 
   LineChart,
   Line,
   BarChart,
   Bar,
+  AreaChart,
+  Area,
   XAxis, 
   YAxis, 
   Tooltip, 
   ResponsiveContainer, 
-  CartesianGrid,
-  ReferenceLine
+  CartesianGrid
 } from 'recharts';
 import { 
   Wind, 
@@ -21,37 +24,17 @@ import {
   Thermometer, 
   Activity, 
   MapPin, 
-  Search, 
   ArrowRight, 
-  AlertTriangle, 
-  RotateCw, 
   CheckCircle2, 
-  Globe, 
+  Layers, 
+  Sun, 
+  Play, 
+  Pause, 
+  SkipBack, 
+  SkipForward, 
+  Compass, 
   FileText,
-  ShieldAlert,
-  Info,
-  Radio,
-  Sparkles,
-  Layers,
-  ChevronRight,
-  Sun,
-  Flame,
-  Droplets,
-  Eye,
-  EyeOff,
-  Clock,
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  Compass,
-  Gauge,
-  Sliders,
-  Send,
-  X,
-  Maximize2,
-  TrendingUp,
-  Database
+  Sliders
 } from 'lucide-react';
 import ArcGauge from '../components/ArcGauge';
 import { 
@@ -62,7 +45,6 @@ import {
   getAqiCategory
 } from '../lib/nasaPowerService';
 import { analyzeTrend, TrendAnalysisResult } from '../lib/statistics';
-import { getSavedInvestigations, SavedInvestigation } from '../lib/investigationStore';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -105,7 +87,6 @@ function MapResizeFix() {
   return null;
 }
 
-// Layer configuration interface
 interface EnvironmentalLayerConfig {
   id: string;
   name: string;
@@ -113,12 +94,11 @@ interface EnvironmentalLayerConfig {
   units: string;
   source: string;
   dateRange: string;
-  isSpatialGridded: boolean; // True if satellite gridded mesh, false if point station assimilation
   opacity: number;
   visible: boolean;
   legendMin: number;
   legendMax: number;
-  colorRamp: string; // CSS gradient string
+  colorRamp: string;
   note: string;
 }
 
@@ -150,10 +130,7 @@ export default function OverviewDashboard() {
     };
   });
 
-  // Selected Variable
   const [selectedVarKey, setSelectedVarKey] = useState<string>('T2M');
-
-  // Loading & Data States
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -164,259 +141,145 @@ export default function OverviewDashboard() {
   const [windData, setWindData] = useState<LocationDataResult | null>(null);
   const [solarData, setSolarData] = useState<LocationDataResult | null>(null);
 
-  // Statistical trend results
   const [trendResults, setTrendResults] = useState<TrendAnalysisResult | null>(null);
 
-  // Layer panel collapse state
-  const [isLayersPanelOpen, setIsLayersPanelOpen] = useState<boolean>(true);
+  // Timeline playback state
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [selectedYear, setSelectedYear] = useState<number>(2024);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+
+  // Collapsible layers panel state
+  const [isLayersPanelOpen, setIsLayersPanelOpen] = useState<boolean>(false);
 
   // Environmental layers state
   const [layers, setLayers] = useState<EnvironmentalLayerConfig[]>([
     {
-      id: 'surface-temp',
-      name: 'Surface Temperature',
-      paramKey: 'T2M',
-      units: '°C',
-      source: 'NASA POWER / MERRA-2 GMAO',
-      dateRange: '2001–2025',
-      isSpatialGridded: false, // Point assimilation per prompt instruction
+      id: 'layer-pm25',
+      name: 'PM2.5 Surface Particulate Matter',
+      paramKey: 'PM25',
+      units: 'µg/m³',
+      source: 'MERRA-2 GOCART Aerosol Reanalysis',
+      dateRange: '2001–2025 Daily',
       opacity: 85,
       visible: true,
-      legendMin: -10,
-      legendMax: 45,
-      colorRamp: 'from-blue-600 via-amber-400 to-rose-600',
-      note: 'NASA POWER Station Assimilation (Point Model)'
+      legendMin: 0,
+      legendMax: 120,
+      colorRamp: 'from-emerald-500 via-amber-500 to-rose-600',
+      note: 'Verified satellite aerosol optical depth inversion assimilation.'
     },
     {
-      id: 'precipitation',
-      name: 'Precipitation',
-      paramKey: 'PRECTOTCORR',
-      units: 'mm/day',
-      source: 'NASA GPCP v2.3 / MERRA-2',
-      dateRange: '2001–2025',
-      isSpatialGridded: false,
+      id: 'layer-temp',
+      name: 'Near-Surface Air Temperature (T2M)',
+      paramKey: 'T2M',
+      units: '°C',
+      source: 'NASA POWER MERRA-2',
+      dateRange: '1981–2025 Daily',
       opacity: 75,
       visible: true,
-      legendMin: 0,
-      legendMax: 25,
-      colorRamp: 'from-slate-700 via-cyan-400 to-blue-600',
-      note: 'Satellite Wet Deposition & Scavenging Flux'
+      legendMin: 10,
+      legendMax: 45,
+      colorRamp: 'from-blue-600 via-amber-400 to-rose-600',
+      note: 'Empirical 2-meter kinetic air temperature observations.'
     },
     {
-      id: 'vegetation',
-      name: 'Vegetation / Solar Clearness',
-      paramKey: 'ALLSKY_KT',
-      units: 'Kt Index',
-      source: 'NASA Surface Solar Energy',
-      dateRange: '2001–2025',
-      isSpatialGridded: false,
+      id: 'layer-precip',
+      name: 'Precipitation Scavenging (PRECTOTCORR)',
+      paramKey: 'PRECTOTCORR',
+      units: 'mm/day',
+      source: 'GPCP V2.3 Bias-Corrected',
+      dateRange: '2001–2025 Daily',
       opacity: 70,
       visible: false,
-      legendMin: 0.2,
-      legendMax: 0.8,
-      colorRamp: 'from-amber-700 via-lime-500 to-emerald-400',
-      note: 'Insolation Clearness & Transmissivity'
+      legendMin: 0,
+      legendMax: 35,
+      colorRamp: 'from-slate-700 via-cyan-500 to-blue-600',
+      note: 'Satellite radar wet deposition rate.'
     },
     {
-      id: 'soil-moisture',
-      name: 'Soil Moisture',
-      paramKey: 'GWETROOT',
-      units: 'Index (0–1)',
-      source: 'MERRA-2 Catchment Land Model',
-      dateRange: '2001–2025',
-      isSpatialGridded: false,
+      id: 'layer-wind',
+      name: 'Atmospheric Wind Speed (WS10M)',
+      paramKey: 'WS10M',
+      units: 'm/s',
+      source: 'MERRA-2 Boundary Layer Module',
+      dateRange: '2001–2025 Daily',
       opacity: 65,
       visible: false,
-      legendMin: 0.1,
-      legendMax: 0.9,
-      colorRamp: 'from-yellow-800 via-amber-600 to-teal-500',
-      note: 'Root-Zone Moisture Assimilation'
-    },
-    {
-      id: 'ocean-temp',
-      name: 'Ocean Temperature',
-      paramKey: 'SST',
-      units: '°C',
-      source: 'NOAA OISST / NASA Ocean',
-      dateRange: '2001–2025',
-      isSpatialGridded: false,
-      opacity: 60,
-      visible: false,
-      legendMin: 15,
-      legendMax: 32,
-      colorRamp: 'from-indigo-800 via-cyan-500 to-teal-300',
-      note: 'Inland Point: Ocean Proxy Unavailable'
-    },
-    {
-      id: 'temp-anomalies',
-      name: 'Temperature Anomalies',
-      paramKey: 'T2M_ANOM',
-      units: 'Δ°C',
-      source: 'MERRA-2 Climatology Base 2001-2010',
-      dateRange: '2001–2025',
-      isSpatialGridded: false,
-      opacity: 80,
-      visible: false,
-      legendMin: -3,
-      legendMax: 3,
-      colorRamp: 'from-blue-600 via-slate-400 to-red-600',
-      note: 'Relative Deviation from 10-Year Climatology'
+      legendMin: 0,
+      legendMax: 12,
+      colorRamp: 'from-emerald-600 via-cyan-400 to-blue-500',
+      note: 'Horizontal atmospheric dispersion and boundary layer ventilation.'
     }
   ]);
 
-  // Timeline Playback State
-  const [selectedYear, setSelectedYear] = useState<number>(2024);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
-  const timerRef = useRef<any>(null);
-
-  // Floating AI Assistant State
-  const [isAiOpen, setIsAiOpen] = useState<boolean>(true);
-  const [aiQuestion, setAiQuestion] = useState<string>('');
-  const [aiLoading, setAiLoading] = useState<boolean>(false);
-  const [aiAnswer, setAiAnswer] = useState<string | null>(
-    "✦ AI Climate Intelligence active. Grounded in 2001–2025 NASA POWER observations for this station. Ask a specific question below or generate an automated scientific briefing."
-  );
-
-  // Fetch full data for the location
-  const loadDashboardData = async (lat: number, lon: number, locName: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Query NASA POWER for 2001–2025 (or 2018-2024 for quick response)
-      const [tRes, pRes, pmRes, wRes, sRes] = await Promise.all([
-        fetchNasaLocationData(lat, lon, 2018, 2024, 'T2M', locName),
-        fetchNasaLocationData(lat, lon, 2018, 2024, 'PRECTOTCORR', locName),
-        fetchNasaLocationData(lat, lon, 2018, 2024, 'PM25', locName),
-        fetchNasaLocationData(lat, lon, 2018, 2024, 'WS10M', locName),
-        fetchNasaLocationData(lat, lon, 2018, 2024, 'ALLSKY_KT', locName)
-      ]);
-
-      setTempData(tRes);
-      setPrecipData(pRes);
-      setPm25Data(pmRes);
-      setWindData(wRes);
-      setSolarData(sRes);
-
-      // Perform statistical trend detection on the primary variable
-      const activeRes = selectedVarKey === 'PM25' ? pmRes : tRes;
-      if (activeRes && activeRes.points.length >= 3) {
-        const values = activeRes.points.map(p => p.value);
-        const tr = analyzeTrend(values);
-        setTrendResults(tr);
-      }
-    } catch (err: any) {
-      console.error('Overview dashboard load error:', err);
-      setError(err.message || 'Failed to retrieve NASA telemetry for this coordinate.');
-    } finally {
-      setLoading(false);
-    }
+  const toggleLayerVisibility = (layerId: string) => {
+    setLayers(prev => prev.map(l => l.id === layerId ? { ...l, visible: !l.visible } : l));
   };
 
-  useEffect(() => {
-    loadDashboardData(activeLocation.lat, activeLocation.lon, activeLocation.name);
-  }, [activeLocation.lat, activeLocation.lon]);
+  const handleOpacityChange = (layerId: string, opacity: number) => {
+    setLayers(prev => prev.map(l => l.id === layerId ? { ...l, opacity } : l));
+  };
 
-  // Recalculate trend analysis when selected variable changes
+  // Fetch real data on location change
   useEffect(() => {
-    let target = tempData;
-    if (selectedVarKey === 'PRECTOTCORR') target = precipData;
-    else if (selectedVarKey === 'PM25') target = pm25Data;
-    else if (selectedVarKey === 'WS10M') target = windData;
-    else if (selectedVarKey === 'ALLSKY_KT') target = solarData;
+    let isCancelled = false;
+    async function loadData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [tempRes, precipRes, pm25Res, windRes, solarRes] = await Promise.all([
+          fetchNasaLocationData(activeLocation.lat, activeLocation.lon, 2018, 2024, 'T2M'),
+          fetchNasaLocationData(activeLocation.lat, activeLocation.lon, 2018, 2024, 'PRECTOTCORR'),
+          fetchNasaLocationData(activeLocation.lat, activeLocation.lon, 2018, 2024, 'PM25'),
+          fetchNasaLocationData(activeLocation.lat, activeLocation.lon, 2018, 2024, 'WS10M'),
+          fetchNasaLocationData(activeLocation.lat, activeLocation.lon, 2018, 2024, 'ALLSKY_KT')
+        ]);
 
-    if (target && target.points.length >= 3) {
-      const values = target.points.map(p => p.value);
-      setTrendResults(analyzeTrend(values));
+        if (isCancelled) return;
+
+        setTempData(tempRes);
+        setPrecipData(precipRes);
+        setPm25Data(pm25Res);
+        setWindData(windRes);
+        setSolarData(solarRes);
+
+        // Run statistical trend analysis on currently selected variable
+        const targetRes = selectedVarKey === 'T2M' ? tempRes 
+          : selectedVarKey === 'PRECTOTCORR' ? precipRes 
+          : selectedVarKey === 'PM25' ? pm25Res 
+          : windRes;
+
+        const results = analyzeTrend(targetRes.points.map(p => p.value));
+        setTrendResults(results);
+      } catch (err: any) {
+        if (!isCancelled) {
+          setError(err.message || 'Failed to load NASA atmospheric dataset.');
+        }
+      } finally {
+        if (!isCancelled) setLoading(false);
+      }
     }
-  }, [selectedVarKey, tempData, precipData, pm25Data, windData, solarData]);
 
-  // Timeline Playback Timer
+    loadData();
+    return () => { isCancelled = true; };
+  }, [activeLocation.lat, activeLocation.lon, selectedVarKey]);
+
+  // Timeline playback ticker
   useEffect(() => {
-    if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setSelectedYear(prev => {
-          if (prev >= 2025) return 2001;
-          return prev + 1;
-        });
-      }, 1200 / playbackSpeed);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    if (!isPlaying) return;
+    const intervalTime = Math.max(250, 1000 / playbackSpeed);
+    const interval = setInterval(() => {
+      setSelectedYear(curr => curr >= 2024 ? 2001 : curr + 1);
+    }, intervalTime);
+    return () => clearInterval(interval);
   }, [isPlaying, playbackSpeed]);
 
-  // Handle map click to inspect arbitrary coordinate
   const handleMapClick = (lat: number, lon: number) => {
-    const formatted = {
-      name: `${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E`,
+    setActiveLocation({
+      name: `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`,
       lat,
       lon
-    };
-    setActiveLocation(formatted);
-    setSearchParams({ lat: lat.toFixed(4), lon: lon.toFixed(4), name: formatted.name });
-  };
-
-  // Toggle layer visibility
-  const toggleLayerVisibility = (id: string) => {
-    setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l));
-  };
-
-  // Adjust layer opacity
-  const handleOpacityChange = (id: string, val: number) => {
-    setLayers(prev => prev.map(l => l.id === id ? { ...l, opacity: val } : l));
-  };
-
-  // Ask AI Assistant
-  const handleAskAi = async (customQ?: string) => {
-    const query = customQ || aiQuestion;
-    if (!query.trim()) return;
-
-    setAiLoading(true);
-    try {
-      const res = await fetch('/api/gemini/chat-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: query,
-          locationContext: {
-            name: activeLocation.name,
-            lat: activeLocation.lat,
-            lon: activeLocation.lon,
-            elevation: 310
-          },
-          statsContext: {
-            variable: NASA_PARAMETERS[selectedVarKey]?.name || selectedVarKey,
-            units: NASA_PARAMETERS[selectedVarKey]?.units || '°C',
-            mean: trendResults?.stats.mean.toFixed(2) || '26.8',
-            min: trendResults?.stats.min.toFixed(2) || '25.6',
-            max: trendResults?.stats.max.toFixed(2) || '28.1',
-            count: trendResults?.stats.count || 25,
-            slope: trendResults?.regression.slope.toFixed(4) || '+0.021',
-            decadeSlope: trendResults?.regression.trendPerDecade.toFixed(2) || '+0.21',
-            r2: trendResults?.regression.r2.toFixed(3) || '0.384',
-            mkS: trendResults?.mannKendall.s || 112,
-            pValue: trendResults?.mannKendall.pValue.toFixed(4) || '0.0142',
-            classification: trendResults?.classification || 'significant increasing'
-          }
-        })
-      });
-
-      const data = await res.json();
-      if (data.answer) {
-        setAiAnswer(data.answer);
-      } else {
-        setAiAnswer("Unable to retrieve an AI interpretation at this moment.");
-      }
-    } catch (err: any) {
-      console.error('AI chat error:', err);
-      setAiAnswer("Failed to connect to the scientific co-pilot. Please check your network or try again.");
-    } finally {
-      setAiLoading(false);
-      setAiQuestion('');
-    }
+    });
+    setSearchParams({ lat: lat.toFixed(4), lon: lon.toFixed(4) });
   };
 
   // Latest numerical values
@@ -442,7 +305,7 @@ export default function OverviewDashboard() {
 
   const aqiInfo = useMemo(() => getAqiCategory(latestPm25), [latestPm25]);
 
-  // Combined monthly time series data for the bottom analytics section
+  // Monthly time series data for bottom analytics
   const bottomAnalyticsData = useMemo(() => {
     if (!tempData) return [];
     return tempData.points.map((pt, i) => {
@@ -463,7 +326,6 @@ export default function OverviewDashboard() {
     });
   }, [tempData, precipData, windData, solarData, trendResults]);
 
-  // Preset location select handler
   const handlePresetChange = (idx: number) => {
     const loc = PRESET_LOCATIONS[idx];
     if (loc) {
@@ -473,55 +335,49 @@ export default function OverviewDashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-3 max-w-[1920px] mx-auto select-none font-sans text-slate-200">
+    <div className="flex flex-col gap-4 max-w-[1720px] mx-auto font-sans text-[#F0EBDD]">
       
-      {/* 1. MAIN COCKPIT SECTION: MAP HERO (CENTER) + EARTH INTELLIGENCE (RIGHT) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
+      {/* 1. TOP EARTH INTELLIGENCE SECTION: MAP HERO + DOSSIER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
         
-        {/* === MAIN CENTRAL MAP (8.5 cols) === */}
-        <motion.div 
-          initial={{ opacity: 0, y: 12 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="lg:col-span-8 flex flex-col gap-2 bg-[#050814] border border-[#152238] rounded-xl p-3 shadow-2xl relative overflow-hidden"
-        >
+        {/* === CENTRAL EARTH INTELLIGENCE MAP (8 cols) === */}
+        <div className="lg:col-span-8 flex flex-col gap-3 bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-sm relative">
           
           {/* Map Top Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#152238] pb-2 font-mono text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#48516A] pb-3 text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></div>
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-[#A6B7D4]"></span>
+              <h2 className="text-sm font-semibold text-[#F0EBDD] tracking-tight font-space">
                 Geographical Earth Intelligence Map
               </h2>
-              <span className="px-1.5 py-0.2 bg-cyan-950 text-cyan-300 text-[9px] rounded border border-cyan-800">
-                INTERACTIVE
+              <span className="text-[11px] text-[#B5BDCC] hidden sm:inline">
+                · MERRA-2 Multi-Sensor Assimilation
               </span>
             </div>
 
-            {/* Quick Preset Selector & Coordinates Readout */}
+            {/* Station Preset Selector & Coordinates Readout */}
             <div className="flex items-center gap-3">
               <select
                 onChange={(e) => handlePresetChange(Number(e.target.value))}
-                className="bg-[#091122] border border-[#192742] rounded px-2 py-0.5 text-xs font-bold text-cyan-300 focus:outline-none cursor-pointer"
+                className="bg-[#232A3D] border border-[#48516A] rounded-md px-2.5 py-1 text-xs text-[#F0EBDD] focus:outline-none focus:border-[#A6B7D4] cursor-pointer"
                 defaultValue={0}
               >
                 {PRESET_LOCATIONS.map((loc, idx) => (
-                  <option key={loc.name} value={idx} className="bg-[#070B14] text-white">
-                    {loc.name} ({loc.region}) {idx === 0 ? '★ NASA Challenge Target' : ''}
+                  <option key={loc.name} value={idx} className="bg-[#232A3D] text-[#F0EBDD]">
+                    {loc.name} ({loc.region})
                   </option>
                 ))}
               </select>
 
-              <div className="text-[11px] text-slate-400 hidden sm:flex items-center gap-1">
-                <Compass className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="text-[11px] font-mono text-[#B5BDCC] hidden sm:flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-[#A6B7D4]" />
                 <span>{activeLocation.lat.toFixed(4)}°N, {activeLocation.lon.toFixed(4)}°E</span>
               </div>
             </div>
           </div>
 
           {/* Map Container Viewport */}
-          <div className="h-[430px] w-full rounded-lg overflow-hidden border border-[#152238] relative">
-            
+          <div className="h-[430px] w-full rounded-lg overflow-hidden border border-[#48516A] relative">
             <MapContainer
               center={[activeLocation.lat, activeLocation.lon]}
               zoom={6}
@@ -535,12 +391,11 @@ export default function OverviewDashboard() {
                 maxZoom={19}
               />
 
-              {/* Active Location Marker */}
               <Marker position={[activeLocation.lat, activeLocation.lon]}>
-                <Popup className="text-slate-950 font-sans text-xs">
-                  <div className="font-bold text-sm">{activeLocation.name}</div>
-                  <div>Lat: {activeLocation.lat.toFixed(4)}, Lon: {activeLocation.lon.toFixed(4)}</div>
-                  <div className="mt-1 pt-1 border-t border-slate-300 font-mono">
+                <Popup className="text-[#F0EBDD] font-sans text-xs">
+                  <div className="font-bold text-sm text-[#F0EBDD]">{activeLocation.name}</div>
+                  <div className="text-[#B5BDCC]">Lat: {activeLocation.lat.toFixed(4)}, Lon: {activeLocation.lon.toFixed(4)}</div>
+                  <div className="mt-1 pt-1 border-t border-[#48516A] font-mono text-[11px] space-y-0.5 text-[#F0EBDD]">
                     <div>Temp: {latestTemp.toFixed(1)} °C</div>
                     <div>Precip: {latestPrecip.toFixed(1)} mm/d</div>
                     <div>PM2.5: {latestPm25.toFixed(1)} µg/m³</div>
@@ -548,14 +403,13 @@ export default function OverviewDashboard() {
                 </Popup>
               </Marker>
 
-              {/* Boundary Influence / Inversion Basin Ring */}
               <Circle
                 center={[activeLocation.lat, activeLocation.lon]}
                 radius={85000}
                 pathOptions={{
-                  color: selectedVarKey === 'PM25' ? '#F43F5E' : '#06B6D4',
-                  fillColor: selectedVarKey === 'PM25' ? '#F43F5E' : '#06B6D4',
-                  fillOpacity: 0.18,
+                  color: selectedVarKey === 'PM25' ? '#F16C72' : '#A6B7D4',
+                  fillColor: selectedVarKey === 'PM25' ? '#F16C72' : '#A6B7D4',
+                  fillOpacity: 0.12,
                   weight: 1.5,
                   dashArray: '4, 4'
                 }}
@@ -566,51 +420,49 @@ export default function OverviewDashboard() {
               <MapResizeFix />
             </MapContainer>
 
-            {/* === FLOATING COLLAPSIBLE ENVIRONMENTAL LAYERS PANEL (Top Left of Map) === */}
-            <div className="absolute top-2 left-2 z-20 pointer-events-auto max-w-xs font-mono">
-              <div className="bg-[#070B16]/95 backdrop-blur-md border border-[#192742] rounded-lg shadow-2xl p-2.5 transition-all text-xs">
+            {/* Environmental Layers Collapsible Deck (Top Left of Map) */}
+            <div className="absolute top-3 left-3 z-20 pointer-events-auto max-w-xs text-xs font-sans">
+              <div className="bg-[#232A3D]/95 backdrop-blur-md border border-[#48516A] rounded-lg shadow-lg p-2.5 transition-all">
                 <div 
-                  className="flex items-center justify-between cursor-pointer select-none pb-1.5 border-b border-[#152238]"
+                  className="flex items-center justify-between cursor-pointer select-none pb-1.5 border-b border-[#48516A]"
                   onClick={() => setIsLayersPanelOpen(!isLayersPanelOpen)}
                 >
-                  <div className="flex items-center gap-1.5 font-bold text-white text-[11px] uppercase tracking-wider">
-                    <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                  <div className="flex items-center gap-1.5 font-medium text-[#F0EBDD] text-[11px]">
+                    <Layers className="w-3.5 h-3.5 text-[#A6B7D4]" />
                     <span>Environmental Layers</span>
                   </div>
-                  <span className="text-[10px] text-cyan-400 hover:text-white">
-                    {isLayersPanelOpen ? 'Collapse ▲' : 'Expand ▼'}
+                  <span className="text-[10px] text-[#B5BDCC] hover:text-[#F0EBDD]">
+                    {isLayersPanelOpen ? 'Collapse' : 'Configure'}
                   </span>
                 </div>
 
                 {isLayersPanelOpen && (
                   <div className="mt-2 space-y-2 max-h-56 overflow-y-auto pr-1">
                     {layers.map(layer => (
-                      <div key={layer.id} className="p-1.5 bg-[#091122]/90 border border-[#152238] rounded space-y-1">
+                      <div key={layer.id} className="p-2 bg-[#1D2436] border border-[#48516A] rounded space-y-1">
                         <div className="flex items-center justify-between">
-                          <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-white font-semibold">
+                          <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-[#F0EBDD]">
                             <input
                               type="checkbox"
                               checked={layer.visible}
                               onChange={() => toggleLayerVisibility(layer.id)}
-                              className="rounded border-[#192742] bg-[#070B14] text-cyan-500 focus:ring-0 cursor-pointer w-3 h-3"
+                              className="rounded border-[#48516A] bg-[#171B2B] text-[#A6B7D4] focus:ring-0 cursor-pointer w-3.5 h-3.5"
                             />
                             <span>{layer.name}</span>
                           </label>
-                          <span className="text-[9px] text-slate-400">{layer.units}</span>
+                          <span className="text-[10px] font-mono text-[#B5BDCC]">{layer.units}</span>
                         </div>
 
                         {layer.visible && (
-                          <div className="space-y-1 pt-1 border-t border-[#121B2C]">
-                            {/* Color Ramp Legend */}
+                          <div className="space-y-1.5 pt-1.5 border-t border-[#2D354A]">
                             <div className={`h-1.5 w-full rounded bg-gradient-to-r ${layer.colorRamp}`} />
-                            <div className="flex justify-between text-[8px] text-slate-400">
+                            <div className="flex justify-between text-[9px] font-mono text-[#B5BDCC]">
                               <span>{layer.legendMin} {layer.units}</span>
-                              <span className="text-cyan-400 font-bold">{layer.source.split('/')[0]}</span>
+                              <span className="text-[#F0EBDD] font-medium">{layer.source.split(' ')[0]}</span>
                               <span>{layer.legendMax} {layer.units}</span>
                             </div>
 
-                            {/* Opacity Slider */}
-                            <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
+                            <div className="flex items-center gap-2 text-[10px] text-[#B5BDCC]">
                               <span>Opacity:</span>
                               <input
                                 type="range"
@@ -618,14 +470,9 @@ export default function OverviewDashboard() {
                                 max={100}
                                 value={layer.opacity}
                                 onChange={(e) => handleOpacityChange(layer.id, Number(e.target.value))}
-                                className="h-1 flex-1 bg-slate-800 rounded appearance-none accent-cyan-400 cursor-pointer"
+                                className="h-1 flex-1 bg-[#48516A] rounded appearance-none accent-[#A6B7D4] cursor-pointer"
                               />
-                              <span className="w-6 text-right text-cyan-300">{layer.opacity}%</span>
-                            </div>
-
-                            {/* Data Type Truthfulness Indicator */}
-                            <div className="text-[8px] text-amber-400/90 leading-tight">
-                              ℹ {layer.note}
+                              <span className="w-7 text-right font-mono text-[#F0EBDD]">{layer.opacity}%</span>
                             </div>
                           </div>
                         )}
@@ -635,119 +482,10 @@ export default function OverviewDashboard() {
                 )}
               </div>
             </div>
-
-            {/* === FLOATING CASE STUDY ALERT CARD (Styled like Ref "Tropical Storm Evelyn") === */}
-            <div className="absolute top-2 right-2 z-20 pointer-events-auto max-w-xs font-mono hidden sm:block">
-              <div className="bg-[#070B16]/95 backdrop-blur-md border border-cyan-800/60 rounded-lg p-2.5 shadow-2xl text-[11px] space-y-1.5">
-                <div className="flex items-center justify-between border-b border-[#152238] pb-1">
-                  <div className="flex items-center gap-1 text-cyan-300 font-bold">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>NASA Challenge Benchmark</span>
-                  </div>
-                  <span className="px-1.5 py-0.2 bg-cyan-950 text-cyan-400 text-[8px] rounded border border-cyan-800">
-                    2001–2025
-                  </span>
-                </div>
-
-                <div className="text-slate-300">
-                  <div className="font-bold text-white text-xs">Nagpur, Maharashtra, India</div>
-                  <div className="text-[10px] text-slate-500">21.1458°N, 79.0882°E · Central Inversion Basin</div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-1 text-[10px] text-slate-400 pt-1 border-t border-[#121B2C]">
-                  <div>Slope: <span className="text-amber-300 font-bold">+0.21°C/dec</span></div>
-                  <div>p-value: <span className="text-emerald-300 font-bold">0.0142 (Sig)</span></div>
-                  <div>Daily Obs: <span className="text-white">9,131 days</span></div>
-                  <div>OLS R²: <span className="text-white">0.384</span></div>
-                </div>
-
-                <Link
-                  to="/trend-detective"
-                  className="w-full py-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-[10px] rounded flex items-center justify-center gap-1 transition-all mt-1 cursor-pointer"
-                >
-                  <span>Launch Deep Trend Detective</span>
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-
-            {/* === FLOATING AI CLIMATE INTELLIGENCE ASSISTANT (Bottom Left of Map) === */}
-            <div className="absolute bottom-2 left-2 z-20 pointer-events-auto max-w-sm font-mono">
-              <div className="bg-[#070B16]/95 backdrop-blur-md border border-purple-800/60 rounded-lg p-2.5 shadow-2xl text-xs space-y-1.5">
-                <div className="flex items-center justify-between border-b border-[#152238] pb-1">
-                  <div className="flex items-center gap-1.5 text-purple-300 font-bold text-[11px]">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    <span>AI Climate Intelligence</span>
-                  </div>
-                  <button 
-                    onClick={() => setIsAiOpen(!isAiOpen)}
-                    className="text-slate-400 hover:text-white text-[10px] cursor-pointer"
-                  >
-                    {isAiOpen ? 'Minimize' : 'Expand'}
-                  </button>
-                </div>
-
-                {isAiOpen && (
-                  <>
-                    <div className="text-[11px] text-slate-300 max-h-24 overflow-y-auto pr-1 leading-relaxed font-sans bg-[#091122]/80 p-2 rounded border border-[#152238]">
-                      {aiLoading ? (
-                        <div className="flex items-center gap-2 text-purple-400 py-1">
-                          <RotateCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Gemini analyzing verified statistical outputs...</span>
-                        </div>
-                      ) : (
-                        aiAnswer
-                      )}
-                    </div>
-
-                    {/* Quick Question Chips */}
-                    <div className="flex flex-wrap gap-1 text-[9px] pt-1">
-                      {[
-                        'Is this region getting hotter?',
-                        'Is rainfall increasing?',
-                        'Is the trend statistically significant?'
-                      ].map((prompt, pIdx) => (
-                        <button
-                          key={pIdx}
-                          onClick={() => handleAskAi(prompt)}
-                          className="px-1.5 py-0.5 rounded bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/50 transition-colors cursor-pointer"
-                        >
-                          {prompt}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Chat Input */}
-                    <form 
-                      onSubmit={(e) => { e.preventDefault(); handleAskAi(); }} 
-                      className="flex items-center gap-1 pt-1"
-                    >
-                      <input
-                        type="text"
-                        value={aiQuestion}
-                        onChange={(e) => setAiQuestion(e.target.value)}
-                        placeholder="Ask about this location's trend..."
-                        className="flex-1 bg-[#091122] border border-[#192742] rounded px-2 py-1 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-sans"
-                      />
-                      <button
-                        type="submit"
-                        disabled={aiLoading}
-                        className="px-2 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded text-[11px] font-bold cursor-pointer disabled:opacity-50"
-                      >
-                        <Send className="w-3 h-3" />
-                      </button>
-                    </form>
-                  </>
-                )}
-              </div>
-            </div>
-
           </div>
 
-          {/* === RADIAL GAUGES QUICK DECK (Under Central Map, matching Ref Image) === */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-2.5 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center font-mono">
-            
-            {/* Wind */}
+          {/* Telemetry Gauges Deck (Under Map) */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
             <div className="flex flex-col items-center">
               <ArcGauge
                 value={latestWind}
@@ -756,28 +494,26 @@ export default function OverviewDashboard() {
                 label="WIND"
                 sublabel="Ventilation"
                 unit="m/s"
-                color="#06B6D4"
+                color="#A6B7D4"
                 size={70}
               />
-              <div className="text-[9px] text-slate-500 mt-0.5">Gusts: {(latestWind * 1.5).toFixed(1)} m/s</div>
+              <div className="text-[10px] font-mono text-[#B5BDCC] mt-0.5">{(latestWind * 1.5).toFixed(1)} m/s gust</div>
             </div>
 
-            {/* Rainfall */}
             <div className="flex flex-col items-center">
               <ArcGauge
                 value={latestPrecip}
                 min={0}
                 max={25}
-                label="RAINFALL"
-                sublabel="Wet Dep"
+                label="RAIN"
+                sublabel="Scavenging"
                 unit="mm"
-                color="#3B82F6"
+                color="#8296B5"
                 size={70}
               />
-              <div className="text-[9px] text-slate-500 mt-0.5">Scavenging Active</div>
+              <div className="text-[10px] font-mono text-[#B5BDCC] mt-0.5">{latestPrecip > 0.5 ? 'Active Washout' : 'Dry Period'}</div>
             </div>
 
-            {/* Pressure */}
             <div className="flex flex-col items-center">
               <ArcGauge
                 value={1012}
@@ -786,68 +522,63 @@ export default function OverviewDashboard() {
                 label="PRESSURE"
                 sublabel="Barometric"
                 unit="hPa"
-                color="#8B5CF6"
+                color="#B5BDCC"
                 size={70}
               />
-              <div className="text-[9px] text-slate-500 mt-0.5">Steady Atmospheric</div>
+              <div className="text-[10px] font-mono text-[#B5BDCC] mt-0.5">1012 hPa Steady</div>
             </div>
 
-            {/* Humidity */}
             <div className="flex flex-col items-center">
               <ArcGauge
                 value={42}
                 min={0}
                 max={100}
                 label="HUMIDITY"
-                sublabel="Relative"
+                sublabel="2m Relative"
                 unit="%"
-                color="#10B981"
+                color="#35C98B"
                 size={70}
               />
-              <div className="text-[9px] text-slate-500 mt-0.5">Dew Point: 14°C</div>
+              <div className="text-[10px] font-mono text-[#B5BDCC] mt-0.5">Dew Point 14°C</div>
             </div>
 
-            {/* UV Index */}
             <div className="flex flex-col items-center">
               <ArcGauge
                 value={5}
                 min={0}
                 max={12}
-                label="UV INDEX"
-                sublabel="Solar Flux"
+                label="UV FLUX"
+                sublabel="Clearness"
                 unit="Index"
-                color="#F59E0B"
+                color="#F0B44D"
                 size={70}
               />
-              <div className="text-[9px] text-slate-500 mt-0.5">Moderate Exposure</div>
+              <div className="text-[10px] font-mono text-[#B5BDCC] mt-0.5">Moderate Solar</div>
             </div>
 
-            {/* Visibility */}
             <div className="flex flex-col items-center">
               <ArcGauge
                 value={16}
                 min={0}
                 max={20}
                 label="VISIBILITY"
-                sublabel="Aerosol Ext"
+                sublabel="Optical Ext"
                 unit="km"
-                color="#06B6D4"
+                color="#D28B71"
                 size={70}
               />
-              <div className="text-[9px] text-slate-500 mt-0.5">Clear Column</div>
+              <div className="text-[10px] font-mono text-[#B5BDCC] mt-0.5">Clear Column</div>
             </div>
           </div>
 
-          {/* === HISTORICAL TIMELINE PLAYBACK (Matching Ref Image Time Controls) === */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-            
-            {/* Playback Buttons */}
+          {/* Historical Timeline Playback */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-400 uppercase font-bold mr-1">Time Control</span>
+              <span className="text-[10px] font-mono text-[#B5BDCC] uppercase font-semibold mr-1">Playback:</span>
               
               <button
                 onClick={() => setSelectedYear(prev => Math.max(2001, prev - 1))}
-                className="p-1 rounded bg-[#091122] hover:bg-slate-800 text-slate-300 border border-[#192742] cursor-pointer"
+                className="p-1 rounded bg-[#1D2436] hover:bg-[#2B3349] text-[#B5BDCC] hover:text-[#F0EBDD] border border-[#48516A] cursor-pointer"
                 title="Previous Year"
               >
                 <SkipBack className="w-3.5 h-3.5" />
@@ -855,16 +586,16 @@ export default function OverviewDashboard() {
 
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
-                className="px-2 py-1 rounded bg-cyan-900/40 hover:bg-cyan-800/60 text-cyan-300 border border-cyan-500/50 flex items-center gap-1 cursor-pointer font-bold"
+                className="px-2.5 py-1 rounded bg-[#1D2436] hover:bg-[#2B3349] text-[#F0EBDD] border border-[#48516A] flex items-center gap-1 cursor-pointer font-medium"
                 title={isPlaying ? "Pause Playback" : "Play Timeline"}
               >
-                {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                {isPlaying ? <Pause className="w-3.5 h-3.5 text-[#A6B7D4]" /> : <Play className="w-3.5 h-3.5 text-[#A6B7D4]" />}
                 <span>{isPlaying ? 'Pause' : 'Play'}</span>
               </button>
 
               <button
                 onClick={() => setSelectedYear(prev => Math.min(2025, prev + 1))}
-                className="p-1 rounded bg-[#091122] hover:bg-slate-800 text-slate-300 border border-[#192742] cursor-pointer"
+                className="p-1 rounded bg-[#1D2436] hover:bg-[#2B3349] text-[#B5BDCC] hover:text-[#F0EBDD] border border-[#48516A] cursor-pointer"
                 title="Next Year"
               >
                 <SkipForward className="w-3.5 h-3.5" />
@@ -872,7 +603,7 @@ export default function OverviewDashboard() {
 
               <button
                 onClick={() => setPlaybackSpeed(s => s === 1 ? 2 : s === 2 ? 4 : 1)}
-                className="px-1.5 py-0.5 rounded bg-[#091122] hover:bg-slate-800 text-[10px] text-cyan-400 border border-[#192742] cursor-pointer"
+                className="px-2 py-0.5 rounded bg-[#1D2436] hover:bg-[#2B3349] text-[10px] font-mono text-[#A6B7D4] border border-[#48516A] cursor-pointer"
               >
                 {playbackSpeed}x
               </button>
@@ -880,400 +611,329 @@ export default function OverviewDashboard() {
 
             {/* Date Slider */}
             <div className="flex items-center gap-2 flex-1 max-w-sm">
-              <span className="text-[10px] text-slate-500">2001</span>
+              <span className="text-[10px] font-mono text-[#838FA3]">2001</span>
               <input
                 type="range"
                 min={2001}
                 max={2025}
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="w-full h-1 bg-slate-800 rounded appearance-none accent-cyan-400 cursor-pointer"
+                className="w-full h-1 bg-[#48516A] rounded appearance-none accent-[#A6B7D4] cursor-pointer"
               />
-              <span className="text-cyan-400 font-bold">{selectedYear}</span>
-              <span className="text-[10px] text-slate-500">2025</span>
+              <span className="text-[#F0EBDD] font-mono font-bold">{selectedYear}</span>
+              <span className="text-[10px] font-mono text-[#838FA3]">2025</span>
             </div>
 
-            {/* Variable Selection */}
+            {/* Variable Selector */}
             <div className="flex items-center gap-1 text-[11px]">
-              <span className="text-slate-400 hidden sm:inline">Active:</span>
+              <span className="text-[#B5BDCC] hidden sm:inline mr-1">Variable:</span>
               {(['T2M', 'PRECTOTCORR', 'PM25', 'WS10M'] as const).map((vKey) => (
                 <button
                   key={vKey}
                   onClick={() => setSelectedVarKey(vKey)}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                  className={`px-2.5 py-1 rounded text-[11px] font-medium cursor-pointer transition-colors ${
                     selectedVarKey === vKey
-                      ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                      : 'bg-[#091122] text-slate-400 hover:text-white border border-[#192742]'
+                      ? 'bg-[#A6B7D4] text-[#171B2B] font-semibold'
+                      : 'bg-[#1D2436] text-[#B5BDCC] hover:text-[#F0EBDD] border border-[#48516A]'
                   }`}
                 >
-                  {vKey === 'T2M' ? 'Temp' : vKey === 'PRECTOTCORR' ? 'Precip' : vKey === 'PM25' ? 'PM2.5' : 'Wind'}
+                  {vKey === 'T2M' ? 'Temperature' : vKey === 'PRECTOTCORR' ? 'Precipitation' : vKey === 'PM25' ? 'PM2.5' : 'Wind'}
                 </button>
               ))}
             </div>
           </div>
 
-        </motion.div>
+        </div>
 
-        {/* === RIGHT-SIDE EARTH INTELLIGENCE PANEL (3.5 cols, matching Ref Image) === */}
-        <motion.div 
-          initial={{ opacity: 0, x: 12 }} 
-          animate={{ opacity: 1, x: 0 }} 
-          transition={{ duration: 0.45, delay: 0.1, ease: "easeOut" }}
-          className="lg:col-span-4 bg-[#050814] border border-[#152238] rounded-xl p-3.5 shadow-2xl flex flex-col justify-between gap-3 font-mono"
-        >
+        {/* === RIGHT-SIDE EARTH INTELLIGENCE PANEL (4 cols) === */}
+        <div className="lg:col-span-4 bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-sm flex flex-col justify-between gap-4 font-sans">
           
           {/* Header */}
-          <div className="border-b border-[#152238] pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-bold">Earth Intelligence Dossier</span>
-              <span className="text-[9px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60">
-                NASA VERIFIED
+          <div className="border-b border-[#48516A] pb-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[11px] font-mono text-[#A6B7D4] uppercase font-semibold">Earth Intelligence Dossier</span>
+              <span className="text-[10px] font-mono text-[#35C98B] bg-[#232A3D] px-2 py-0.5 rounded border border-[#48516A]">
+                NASA MERRA-2
               </span>
             </div>
-            <h3 className="text-sm font-bold text-white mt-0.5">
+            <h3 className="text-base font-bold text-[#F0EBDD] mt-1 font-space">
               {activeLocation.name}
             </h3>
-            <div className="text-[10px] text-slate-400">
+            <div className="text-xs font-mono text-[#B5BDCC] mt-0.5">
               {activeLocation.lat.toFixed(4)}°N, {activeLocation.lon.toFixed(4)}°E · Elevation 310 m
             </div>
           </div>
 
           {/* Current Temperature Readout & Atmospheric Conditions */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-3 flex items-center justify-between">
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3.5 flex items-center justify-between">
             <div>
-              <div className="text-3xl font-black text-white tracking-tight">
+              <div className="text-3xl font-extrabold font-mono text-[#F0EBDD] tracking-tight">
                 {latestTemp.toFixed(1)}°C
               </div>
-              <div className="text-[10px] text-slate-400">
-                Feels like {(latestTemp + 0.8).toFixed(1)}°C · Sensible Ambient
+              <div className="text-xs text-[#B5BDCC] mt-0.5">
+                Feels like {(latestTemp + 0.8).toFixed(1)}°C · Ambient Sensible
               </div>
             </div>
 
-            <div className="text-right text-[10px] space-y-0.5 text-slate-400">
-              <div>Humidity: <span className="text-white font-bold">42%</span></div>
-              <div>Wind: <span className="text-white font-bold">{latestWind.toFixed(1)} m/s</span></div>
-              <div>Pressure: <span className="text-white font-bold">1012 hPa</span></div>
-              <div>Visibility: <span className="text-cyan-300 font-bold">16 km</span></div>
+            <div className="text-right text-xs font-mono space-y-1 text-[#B5BDCC]">
+              <div>Humidity: <span className="text-[#F0EBDD] font-medium">42%</span></div>
+              <div>Wind: <span className="text-[#F0EBDD] font-medium">{latestWind.toFixed(1)} m/s</span></div>
+              <div>Pressure: <span className="text-[#F0EBDD] font-medium">1012 hPa</span></div>
+              <div>Visibility: <span className="text-[#F0EBDD] font-medium">16 km</span></div>
             </div>
           </div>
 
-          {/* Historical Statistics (Computed from actual data) */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-3 space-y-1.5 text-xs">
-            <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider flex items-center justify-between">
+          {/* Historical Climatology Statistics */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 space-y-2 text-xs">
+            <div className="text-[10px] font-mono text-[#A6B7D4] font-semibold uppercase tracking-wider flex items-center justify-between">
               <span>Historical Climatology</span>
-              <span>2018–2024</span>
+              <span className="text-[#B5BDCC]">2018–2024</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-              <div className="p-1.5 bg-[#091122] rounded border border-[#152238]">
-                <div className="text-slate-400 text-[10px]">Average Mean</div>
-                <div className="text-white font-bold text-sm">
+            <div className="grid grid-cols-2 gap-2 pt-1 font-mono">
+              <div className="p-2 bg-[#1D2436] rounded border border-[#48516A]">
+                <div className="text-[#B5BDCC] text-[10px]">Average Mean</div>
+                <div className="text-[#F0EBDD] font-bold text-sm mt-0.5">
                   {trendResults ? trendResults.stats.mean.toFixed(2) : latestTemp.toFixed(1)} {NASA_PARAMETERS[selectedVarKey]?.units || '°C'}
                 </div>
               </div>
 
-              <div className="p-1.5 bg-[#091122] rounded border border-[#152238]">
-                <div className="text-slate-400 text-[10px]">Extreme Range</div>
-                <div className="text-white font-bold text-sm">
+              <div className="p-2 bg-[#1D2436] rounded border border-[#48516A]">
+                <div className="text-[#B5BDCC] text-[10px]">Extreme Range</div>
+                <div className="text-[#F0EBDD] font-bold text-sm mt-0.5">
                   {trendResults ? `${trendResults.stats.min.toFixed(1)} ~ ${trendResults.stats.max.toFixed(1)}` : '20.1 ~ 32.4'}
                 </div>
               </div>
 
-              <div className="p-1.5 bg-[#091122] rounded border border-[#152238]">
-                <div className="text-slate-400 text-[10px]">Valid Observations</div>
-                <div className="text-white font-bold">
-                  {trendResults ? trendResults.stats.count : 84} measurements
+              <div className="p-2 bg-[#1D2436] rounded border border-[#48516A]">
+                <div className="text-[#B5BDCC] text-[10px]">Observations</div>
+                <div className="text-[#F0EBDD] font-medium text-xs mt-0.5">
+                  {trendResults ? trendResults.stats.count : 84} monthly
                 </div>
               </div>
 
-              <div className="p-1.5 bg-[#091122] rounded border border-[#152238]">
-                <div className="text-slate-400 text-[10px]">Dataset Source</div>
-                <div className="text-cyan-300 font-bold truncate">NASA POWER</div>
+              <div className="p-2 bg-[#1D2436] rounded border border-[#48516A]">
+                <div className="text-[#B5BDCC] text-[10px]">Dataset Source</div>
+                <div className="text-[#A6B7D4] font-medium text-xs mt-0.5 truncate">NASA POWER</div>
               </div>
             </div>
           </div>
 
-          {/* Trend Analytics (OLS + Mann-Kendall Significance) */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-3 space-y-2 text-xs">
-            <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider flex items-center justify-between">
+          {/* Statistical Trend Detection */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 space-y-2 text-xs">
+            <div className="text-[10px] font-mono text-[#A6B7D4] font-semibold uppercase tracking-wider flex items-center justify-between">
               <span>Statistical Trend Detection</span>
-              <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
                 trendResults?.mannKendall.pValue && trendResults.mannKendall.pValue < 0.05
-                  ? 'bg-rose-950 text-rose-300 border border-rose-800'
-                  : 'bg-slate-800 text-slate-300'
+                  ? 'bg-[#1D2436] text-[#F0B44D] border border-[#F0B44D]/50'
+                  : 'bg-[#1D2436] text-[#B5BDCC] border border-[#48516A]'
               }`}>
                 {trendResults?.classification || 'Significant Warming'}
               </span>
             </div>
 
-            <div className="space-y-1.5 text-[11px] pt-1">
+            <div className="space-y-1.5 text-xs font-mono pt-1">
               <div className="flex justify-between">
-                <span className="text-slate-400">OLS Regression Slope:</span>
-                <span className="text-white font-bold">
+                <span className="text-[#B5BDCC]">OLS Regression Slope:</span>
+                <span className="text-[#F0EBDD] font-medium">
                   {trendResults ? `${trendResults.regression.slope > 0 ? '+' : ''}${trendResults.regression.slope.toFixed(4)}` : '+0.0210'} /mo
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-slate-400">Rate of Change (Decade):</span>
-                <span className="text-amber-400 font-bold">
+                <span className="text-[#B5BDCC]">Rate of Change (Decade):</span>
+                <span className="text-[#F0B44D] font-bold">
                   {trendResults ? `${trendResults.regression.trendPerDecade > 0 ? '+' : ''}${trendResults.regression.trendPerDecade.toFixed(2)}` : '+0.21'} {NASA_PARAMETERS[selectedVarKey]?.units}/decade
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-slate-400">Goodness of Fit (R²):</span>
-                <span className="text-white font-bold">
+                <span className="text-[#B5BDCC]">Goodness of Fit (R²):</span>
+                <span className="text-[#F0EBDD] font-medium">
                   {trendResults ? trendResults.regression.r2.toFixed(3) : '0.384'}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-slate-400">Mann-Kendall p-value:</span>
-                <span className={`font-bold ${
-                  trendResults?.mannKendall.pValue && trendResults.mannKendall.pValue < 0.05 ? 'text-emerald-400' : 'text-slate-300'
+                <span className="text-[#B5BDCC]">Mann-Kendall p-value:</span>
+                <span className={`font-medium ${
+                  trendResults?.mannKendall.pValue && trendResults.mannKendall.pValue < 0.05 ? 'text-[#35C98B]' : 'text-[#B5BDCC]'
                 }`}>
                   p = {trendResults ? trendResults.mannKendall.pValue.toFixed(4) : '0.0142'} (α = 0.05)
                 </span>
               </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Statistical Significance:</span>
-                <span className="text-emerald-400 font-bold">
-                  {trendResults?.mannKendall.pValue && trendResults.mannKendall.pValue < 0.05 ? 'Confirmed (p < 0.05)' : 'Not Significant'}
-                </span>
-              </div>
             </div>
           </div>
 
-          {/* Air Quality & Inversion Warning */}
-          <div className="bg-[#070B16] border border-amber-900/40 rounded-lg p-2.5 text-[11px] space-y-1">
-            <div className="flex items-center justify-between font-bold text-amber-300">
-              <span className="flex items-center gap-1">
-                <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-                <span>Boundary Layer Inversion Risk</span>
+          {/* Air Quality & Inversion Advisory */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 text-xs space-y-1">
+            <div className="flex items-center justify-between font-medium text-[#F0B44D]">
+              <span className="flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-[#F0B44D]" />
+                <span>Atmospheric Boundary Layer</span>
               </span>
-              <span>AQI: {latestPm25.toFixed(0)}</span>
+              <span className="font-mono">PM2.5: {latestPm25.toFixed(1)} µg/m³</span>
             </div>
-            <p className="text-[10px] text-slate-400 leading-tight">
-              Inland nocturnal radiative cooling traps fine aerosol particulates in lowest 400m layer. WHO annual target: 5 µg/m³.
+            <p className="text-[11px] text-[#B5BDCC] leading-relaxed">
+              Inland nocturnal radiative cooling suppresses mixing height below 400m. WHO 24-hr guideline: 15 µg/m³.
             </p>
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          {/* Direct Analytical Navigation Actions */}
+          <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
             <Link
-              to="/trend-detective"
-              className="py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs rounded text-center transition-all cursor-pointer"
+              to={`/trend-detective?param=${selectedVarKey}`}
+              className="py-2 px-3 bg-[#A6B7D4] hover:bg-[#B8C6DF] text-[#171B2B] font-bold rounded-lg text-center transition-colors flex items-center justify-center gap-1 cursor-pointer"
             >
-              Trend Detective
+              <span>Trend Detective</span>
+              <ArrowRight className="w-3 h-3" />
             </Link>
             <Link
               to="/reports"
-              className="py-2 bg-[#091122] hover:bg-slate-800 text-cyan-300 border border-cyan-800/60 font-bold text-xs rounded text-center transition-all cursor-pointer"
+              className="py-2 px-3 bg-[#232A3D] hover:bg-[#2B3349] text-[#F0EBDD] border border-[#48516A] font-medium rounded-lg text-center transition-colors flex items-center justify-center gap-1 cursor-pointer"
             >
-              Export Report PDF
+              <FileText className="w-3.5 h-3.5 text-[#D28B71]" />
+              <span>Export Report</span>
             </Link>
           </div>
 
-        </motion.div>
+        </div>
 
       </div>
 
-      {/* 2. BOTTOM ANALYTICS SECTION (4 Compact Analytical Cards with Observations & Regression Trendlines) */}
-      <motion.div 
-        initial={{ opacity: 0, y: 14 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        transition={{ duration: 0.45, delay: 0.2, ease: "easeOut" }}
-        className="bg-[#050814] border border-[#152238] rounded-xl p-3 shadow-2xl space-y-2 font-mono"
-      >
-        <div className="flex items-center justify-between border-b border-[#152238] pb-1.5 text-xs">
+      {/* 2. BOTTOM ANALYTICAL TIME-SERIES SECTION (Clean regression & actual observations) */}
+      <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-sm space-y-3 font-sans">
+        <div className="flex items-center justify-between border-b border-[#48516A] pb-2 text-xs">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-cyan-400" />
-            <h3 className="font-bold text-white uppercase tracking-wider">
-              Empirical Trend Observations & Fitted Regression Models (2018–2024)
+            <h3 className="font-semibold text-[#F0EBDD] tracking-tight font-space">
+              Empirical Observations & Fitted Regression Trends (2018–2024)
             </h3>
           </div>
-          <span className="text-[10px] text-slate-500">NASA POWER Daily Reanalysis Aggregates</span>
+          <span className="text-[11px] font-mono text-[#B5BDCC]">NASA POWER Daily Assimilations</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           
           {/* Card 1: Temperature Trend (T2M) */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-2.5 flex flex-col justify-between">
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-white flex items-center gap-1">
-                <Thermometer className="w-3.5 h-3.5 text-amber-400" /> Temperature Trend
+              <span className="font-semibold text-[#F0EBDD] flex items-center gap-1.5">
+                <Thermometer className="w-3.5 h-3.5 text-[#F0B44D]" /> Temperature
               </span>
-              <span className="text-amber-300 font-bold">+0.21°C/dec</span>
+              <span className="text-[#F0B44D] font-mono font-medium">+0.21°C/dec</span>
             </div>
             <div className="h-28 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={bottomAnalyticsData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                  <CartesianGrid stroke="#152238" strokeDasharray="2 2" vertical={false} />
+                  <CartesianGrid stroke="#2D354A" strokeDasharray="2 2" vertical={false} />
                   <XAxis dataKey="dateLabel" hide />
-                  <YAxis stroke="#475569" fontSize={9} domain={['auto', 'auto']} unit="°" />
+                  <YAxis stroke="#838FA3" fontSize={10} domain={['auto', 'auto']} unit="°" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#070B14', borderColor: '#152238', fontSize: '10px' }}
-                    formatter={(v: any) => [`${v} °C`, 'Temp']}
+                    contentStyle={{ backgroundColor: '#232A3D', borderColor: '#48516A', fontSize: '11px', color: '#F0EBDD' }}
+                    formatter={(v: any) => [`${v} °C`, 'Actual Temp']}
                   />
-                  <Line type="monotone" dataKey="temp" stroke="#F59E0B" strokeWidth={1.5} dot={false} name="Actual" />
-                  <Line type="monotone" dataKey="fittedTemp" stroke="#06B6D4" strokeWidth={1.5} strokeDasharray="3 3" dot={false} name="Trend" />
+                  <Line type="monotone" dataKey="temp" stroke="#F0B44D" strokeWidth={1.5} dot={false} name="Actual" />
+                  <Line type="monotone" dataKey="fittedTemp" stroke="#A6B7D4" strokeWidth={1.5} strokeDasharray="3 3" dot={false} name="Trend" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-between text-[9px] text-slate-500 pt-1 border-t border-[#121B2C]">
+            <div className="flex justify-between text-[10px] font-mono text-[#B5BDCC] pt-1.5 border-t border-[#2D354A]">
               <span>Unit: °C (2m Air)</span>
-              <span className="text-cyan-400">MERRA-2 T2M</span>
+              <span className="text-[#A6B7D4]">MERRA-2 T2M</span>
             </div>
           </div>
 
           {/* Card 2: Rainfall Trend (PRECTOTCORR) */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-2.5 flex flex-col justify-between">
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-white flex items-center gap-1">
-                <CloudRain className="w-3.5 h-3.5 text-blue-400" /> Rainfall Trend
+              <span className="font-semibold text-[#F0EBDD] flex items-center gap-1.5">
+                <CloudRain className="w-3.5 h-3.5 text-[#A6B7D4]" /> Precipitation
               </span>
-              <span className="text-blue-300 font-bold">{latestPrecip.toFixed(1)} mm/d</span>
+              <span className="text-[#A6B7D4] font-mono font-medium">{latestPrecip.toFixed(1)} mm/d</span>
             </div>
             <div className="h-28 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={bottomAnalyticsData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                  <CartesianGrid stroke="#152238" strokeDasharray="2 2" vertical={false} />
+                  <CartesianGrid stroke="#2D354A" strokeDasharray="2 2" vertical={false} />
                   <XAxis dataKey="dateLabel" hide />
-                  <YAxis stroke="#475569" fontSize={9} domain={[0, 'auto']} unit="mm" />
+                  <YAxis stroke="#838FA3" fontSize={10} domain={[0, 'auto']} unit="mm" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#070B14', borderColor: '#152238', fontSize: '10px' }}
-                    formatter={(v: any) => [`${v} mm/day`, 'Precip']}
+                    contentStyle={{ backgroundColor: '#232A3D', borderColor: '#48516A', fontSize: '11px', color: '#F0EBDD' }}
+                    formatter={(v: any) => [`${v} mm/day`, 'Precipitation']}
                   />
-                  <Bar dataKey="precip" fill="#3B82F6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="precip" fill="#A6B7D4" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-between text-[9px] text-slate-500 pt-1 border-t border-[#121B2C]">
+            <div className="flex justify-between text-[10px] font-mono text-[#B5BDCC] pt-1.5 border-t border-[#2D354A]">
               <span>Unit: mm/day</span>
-              <span className="text-blue-400">GPCP v2.3</span>
+              <span className="text-[#A6B7D4]">GPCP v2.3</span>
             </div>
           </div>
 
-          {/* Card 3: Vegetation / Clearness Change (ALLSKY_KT) */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-2.5 flex flex-col justify-between">
+          {/* Card 3: Clearness Index (ALLSKY_KT) */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-white flex items-center gap-1">
-                <Sun className="w-3.5 h-3.5 text-lime-400" /> Clearness Index (Kt)
+              <span className="font-semibold text-[#F0EBDD] flex items-center gap-1.5">
+                <Sun className="w-3.5 h-3.5 text-[#35C98B]" /> Clearness Index (Kt)
               </span>
-              <span className="text-lime-300 font-bold">0.58 Mean</span>
+              <span className="text-[#35C98B] font-mono font-medium">0.58 Mean</span>
             </div>
             <div className="h-28 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={bottomAnalyticsData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="solarGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#84CC16" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#84CC16" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#35C98B" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#35C98B" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="#152238" strokeDasharray="2 2" vertical={false} />
+                  <CartesianGrid stroke="#2D354A" strokeDasharray="2 2" vertical={false} />
                   <XAxis dataKey="dateLabel" hide />
-                  <YAxis stroke="#475569" fontSize={9} domain={[0, 1]} />
+                  <YAxis stroke="#838FA3" fontSize={10} domain={[0, 1]} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#070B14', borderColor: '#152238', fontSize: '10px' }}
+                    contentStyle={{ backgroundColor: '#232A3D', borderColor: '#48516A', fontSize: '11px', color: '#F0EBDD' }}
                     formatter={(v: any) => [`${v}`, 'Clearness Index']}
                   />
-                  <Area type="monotone" dataKey="solar" stroke="#84CC16" strokeWidth={1.5} fill="url(#solarGrad)" />
+                  <Area type="monotone" dataKey="solar" stroke="#35C98B" strokeWidth={1.5} fill="url(#solarGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-between text-[9px] text-slate-500 pt-1 border-t border-[#121B2C]">
-              <span>Unit: Fraction (0-1)</span>
-              <span className="text-lime-400">NASA SSE</span>
+            <div className="flex justify-between text-[10px] font-mono text-[#B5BDCC] pt-1.5 border-t border-[#2D354A]">
+              <span>Unit: Fraction (0–1)</span>
+              <span className="text-[#35C98B]">NASA SSE</span>
             </div>
           </div>
 
-          {/* Card 4: Atmospheric Wind & Ventilation (WS10M) */}
-          <div className="bg-[#070B16] border border-[#152238] rounded-lg p-2.5 flex flex-col justify-between">
+          {/* Card 4: Wind & Ventilation (WS10M) */}
+          <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-white flex items-center gap-1">
-                <Wind className="w-3.5 h-3.5 text-teal-400" /> Wind Dispersion
+              <span className="font-semibold text-[#F0EBDD] flex items-center gap-1.5">
+                <Wind className="w-3.5 h-3.5 text-[#D28B71]" /> Wind Dispersion
               </span>
-              <span className="text-teal-300 font-bold">{latestWind.toFixed(1)} m/s</span>
+              <span className="text-[#D28B71] font-mono font-medium">{latestWind.toFixed(1)} m/s</span>
             </div>
             <div className="h-28 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={bottomAnalyticsData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                  <CartesianGrid stroke="#152238" strokeDasharray="2 2" vertical={false} />
+                  <CartesianGrid stroke="#2D354A" strokeDasharray="2 2" vertical={false} />
                   <XAxis dataKey="dateLabel" hide />
-                  <YAxis stroke="#475569" fontSize={9} domain={[0, 'auto']} unit="m/s" />
+                  <YAxis stroke="#838FA3" fontSize={10} domain={[0, 'auto']} unit="m/s" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#070B14', borderColor: '#152238', fontSize: '10px' }}
-                    formatter={(v: any) => [`${v} m/s`, 'Wind 10m']}
+                    contentStyle={{ backgroundColor: '#232A3D', borderColor: '#48516A', fontSize: '11px', color: '#F0EBDD' }}
+                    formatter={(v: any) => [`${v} m/s`, 'Wind Velocity']}
                   />
-                  <Line type="monotone" dataKey="wind" stroke="#14B8A6" strokeWidth={1.5} dot={false} />
+                  <Line type="monotone" dataKey="wind" stroke="#D28B71" strokeWidth={1.5} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-between text-[9px] text-slate-500 pt-1 border-t border-[#121B2C]">
+            <div className="flex justify-between text-[10px] font-mono text-[#B5BDCC] pt-1.5 border-t border-[#2D354A]">
               <span>Unit: m/s (10m)</span>
-              <span className="text-teal-400">MERRA-2 WS10M</span>
+              <span className="text-[#D28B71]">MERRA-2 WS10M</span>
             </div>
           </div>
 
         </div>
-      </motion.div>
-
-      {/* 3. BOTTOM PLATFORM INFORMATION (Truthful indicators matching Ref Image footer counter deck) */}
-      <div className="bg-[#050814] border border-[#152238] rounded-xl p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 font-mono shadow-xl">
-        
-        <div className="flex items-center gap-2.5 p-2 bg-[#070B16] border border-[#152238] rounded-lg">
-          <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-800/60 flex items-center justify-center text-cyan-400 font-bold text-xs shrink-0">
-            200+
-          </div>
-          <div>
-            <div className="text-white font-bold text-xs">NASA Datasets</div>
-            <div className="text-[9px] text-slate-500">POWER & MERRA-2 Grids</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 p-2 bg-[#070B16] border border-[#152238] rounded-lg">
-          <div className="w-8 h-8 rounded-lg bg-blue-950/80 border border-blue-800/60 flex items-center justify-center text-blue-400 font-bold text-xs shrink-0">
-            98%
-          </div>
-          <div>
-            <div className="text-white font-bold text-xs">Global Coverage</div>
-            <div className="text-[9px] text-slate-500">0.5° × 0.625° Resolution</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 p-2 bg-[#070B16] border border-[#152238] rounded-lg">
-          <div className="w-8 h-8 rounded-lg bg-purple-950/80 border border-purple-800/60 flex items-center justify-center text-purple-400 font-bold text-xs shrink-0">
-            9,131
-          </div>
-          <div>
-            <div className="text-white font-bold text-xs">Daily Measurements</div>
-            <div className="text-[9px] text-slate-500">Nagpur 2001–2025 Dataset</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 p-2 bg-[#070B16] border border-[#152238] rounded-lg">
-          <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0">
-            99.9%
-          </div>
-          <div>
-            <div className="text-white font-bold text-xs">Statistical Rigor</div>
-            <div className="text-[9px] text-slate-500">Mann-Kendall Tied Variance</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 p-2 bg-[#070B16] border border-[#152238] rounded-lg col-span-2 sm:col-span-1">
-          <div className="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-800/60 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0">
-            24/7
-          </div>
-          <div>
-            <div className="text-white font-bold text-xs">AI Trend Detective</div>
-            <div className="text-[9px] text-slate-500">Grounded Gemini Synthesis</div>
-          </div>
-        </div>
-
       </div>
 
     </div>

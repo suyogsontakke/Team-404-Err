@@ -420,16 +420,16 @@ export default function AtmosphericGlobe3D({
 
   if (webGlError) {
     return (
-      <div className={`relative w-full h-full min-h-[380px] flex flex-col items-center justify-center p-6 bg-[#040812] border border-cyan-500/20 rounded-2xl text-center select-none ${className}`}>
-        <AlertCircle className="w-10 h-10 text-amber-400 mb-2 animate-bounce" />
-        <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider mb-1">WebGL 3D Rendering Notice</h3>
-        <p className="text-xs text-slate-400 max-w-md font-mono mb-4">{webGlError}</p>
+      <div className={`relative w-full h-full min-h-[380px] flex flex-col items-center justify-center p-6 bg-[#171B2B] border border-[#48516A] rounded-2xl text-center select-none ${className}`}>
+        <AlertCircle className="w-10 h-10 text-[#F0B44D] mb-2 animate-bounce" />
+        <h3 className="text-sm font-bold text-[#F0EBDD] font-mono uppercase tracking-wider mb-1">WebGL 3D Rendering Notice</h3>
+        <p className="text-xs text-[#B5BDCC] max-w-md font-mono mb-4">{webGlError}</p>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {PRESET_LOCATIONS.slice(0, 5).map((loc) => (
             <button
               key={loc.name}
               onClick={() => onSelectLocation?.(loc)}
-              className="px-3 py-1 bg-[#0a1628] hover:bg-[#12243f] text-cyan-300 border border-cyan-500/30 rounded-lg text-xs font-mono transition-colors"
+              className="px-3 py-1 bg-[#232A3D] hover:bg-[#353D55] text-[#F0EBDD] border border-[#48516A] rounded-lg text-xs font-mono transition-colors"
             >
               {loc.name}
             </button>
@@ -446,8 +446,8 @@ export default function AtmosphericGlobe3D({
 
       {/* Floating HUD Telemetry Badge */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#07090E]/85 backdrop-blur border border-cyan-500/40 rounded-lg text-[11px] font-mono text-cyan-300 shadow-lg">
-          <Globe className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '12s' }} />
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#232A3D]/90 backdrop-blur border border-[#48516A] rounded-lg text-[11px] font-mono text-[#F0EBDD] shadow-lg">
+          <Globe className="w-3.5 h-3.5 text-[#A6B7D4] animate-spin" style={{ animationDuration: '12s' }} />
           <span>3D NASA Atmospheric Globe · MERRA-2 Mesh</span>
         </div>
       </div>
@@ -463,11 +463,11 @@ export default function AtmosphericGlobe3D({
                 onClick={() => onSelectLocation?.(loc)}
                 className={`px-2 py-0.5 text-[10px] rounded-md transition-all flex items-center gap-1 font-mono cursor-pointer border ${
                   isSelected 
-                    ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-md shadow-cyan-500/30' 
-                    : 'bg-[#0B0E17]/90 text-slate-300 hover:text-white border-[#1E293B] hover:border-slate-600'
+                    ? 'bg-[#A6B7D4] text-[#171B2B] font-bold border-[#A6B7D4] shadow-sm' 
+                    : 'bg-[#232A3D]/95 text-[#B5BDCC] hover:text-[#F0EBDD] border-[#48516A] hover:border-[#64718A]'
                 }`}
               >
-                <MapPin className="w-2.5 h-2.5 text-cyan-400" />
+                <MapPin className={`w-2.5 h-2.5 ${isSelected ? 'text-[#171B2B]' : 'text-[#A6B7D4]'}`} />
                 <span>{loc.name}</span>
               </button>
             );
@@ -476,9 +476,9 @@ export default function AtmosphericGlobe3D({
 
         <button
           onClick={() => setAutoRotate(!autoRotate)}
-          className="px-2 py-0.5 text-[10px] bg-[#0B0E17]/90 border border-[#1E293B] hover:border-slate-600 text-slate-400 hover:text-white rounded-md transition-colors flex items-center gap-1 cursor-pointer font-mono"
+          className="px-2 py-0.5 text-[10px] bg-[#232A3D]/95 border border-[#48516A] hover:border-[#64718A] text-[#B5BDCC] hover:text-[#F0EBDD] rounded-md transition-colors flex items-center gap-1 cursor-pointer font-mono"
         >
-          <RotateCw className={`w-2.5 h-2.5 ${autoRotate ? 'text-cyan-400 animate-spin' : ''}`} style={{ animationDuration: '6s' }} />
+          <RotateCw className={`w-2.5 h-2.5 ${autoRotate ? 'text-[#A6B7D4] animate-spin' : ''}`} style={{ animationDuration: '6s' }} />
           <span>{autoRotate ? 'Auto-Rotate ON' : 'Paused'}</span>
         </button>
       </div>

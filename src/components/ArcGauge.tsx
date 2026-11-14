@@ -1,3 +1,8 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React from 'react';
 
 interface ArcGaugeProps {
@@ -7,8 +12,8 @@ interface ArcGaugeProps {
   label: string;
   sublabel?: string;
   unit?: string;
-  color?: string; // hex or tailwind stroke
-  size?: number; // width/height in px
+  color?: string;
+  size?: number;
   thresholds?: { value: number; color: string; label: string }[];
 }
 
@@ -19,15 +24,15 @@ export default function ArcGauge({
   label,
   sublabel,
   unit = '',
-  color = '#22D3EE',
+  color = '#A6B7D4',
   size = 110,
   thresholds
 }: ArcGaugeProps) {
-  const strokeWidth = 7;
+  const strokeWidth = 5.5;
   const radius = (size - strokeWidth * 2) / 2;
   const center = size / 2;
 
-  // 240 degree arc (from 150 deg to 390 deg)
+  // 240 degree arc (from 135 deg to 405 deg)
   const startAngle = 135;
   const endAngle = 405;
   const totalAngle = endAngle - startAngle;
@@ -65,29 +70,18 @@ export default function ArcGauge({
   const valuePath = describeArc(center, center, radius, startAngle, currentAngle);
 
   return (
-    <div className="flex flex-col items-center justify-center relative select-none" style={{ width: size }}>
+    <div className="flex flex-col items-center justify-center relative select-none font-sans" style={{ width: size }}>
       <svg width={size} height={size} className="overflow-visible">
-        {/* Glow Filter */}
-        <defs>
-          <filter id={`glow-${label}`} x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
         {/* Track Background */}
         <path
           d={bgPath}
           fill="none"
-          stroke="#152238"
+          stroke="#2D354A"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
 
-        {/* Value Arc with Glow */}
+        {/* Value Arc */}
         {percentage > 0.01 && (
           <path
             d={valuePath}
@@ -95,8 +89,7 @@ export default function ArcGauge({
             stroke={activeColor}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
-            filter={`url(#glow-${label})`}
-            className="transition-all duration-700 ease-out"
+            className="transition-all duration-500 ease-out"
           />
         )}
 
@@ -104,30 +97,30 @@ export default function ArcGauge({
         <circle
           cx={polarToCartesian(center, center, radius, startAngle).x}
           cy={polarToCartesian(center, center, radius, startAngle).y}
-          r={2}
-          fill="#475569"
+          r={1.8}
+          fill="#838FA3"
         />
         <circle
           cx={polarToCartesian(center, center, radius, endAngle).x}
           cy={polarToCartesian(center, center, radius, endAngle).y}
-          r={2}
-          fill="#475569"
+          r={1.8}
+          fill="#838FA3"
         />
       </svg>
 
       {/* Center Numeric Value */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-0.5">
         <div className="flex items-baseline">
-          <span className="text-xl font-black font-mono tracking-tight text-white tabular-nums drop-shadow">
+          <span className="text-lg font-bold font-mono tracking-tight text-[#F0EBDD] tabular-nums">
             {typeof value === 'number' && Number.isFinite(value) ? (value % 1 === 0 ? value : value.toFixed(1)) : '--'}
           </span>
-          {unit && <span className="text-[10px] font-sans text-slate-400 ml-0.5">{unit}</span>}
+          {unit && <span className="text-[9px] font-mono text-[#B5BDCC] ml-0.5">{unit}</span>}
         </div>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 -mt-0.5">
+        <span className="text-[9px] font-mono uppercase tracking-wider text-[#B5BDCC]">
           {label}
         </span>
         {sublabel && (
-          <span className="text-[9px] font-sans text-cyan-400 truncate max-w-[85px] text-center">
+          <span className="text-[8px] text-[#838FA3] truncate max-w-[85px] text-center">
             {sublabel}
           </span>
         )}

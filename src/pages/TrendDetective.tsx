@@ -3,24 +3,19 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PageContainer from '../components/PageContainer';
 import { 
-  analyzeAnnualTrend, 
   AnnualTrendAnalysisResult 
 } from '../lib/statistics';
 import { 
-  fetchNasaDailyAnnualT2M, 
   NasaDailyAnnualInvestigationResult,
   PRESET_LOCATIONS 
 } from '../lib/nasaPowerService';
 import { fetchCachedDailyAnnualT2M } from '../services/dataCache';
 import { createGoogleDocReport } from '../services/googleDocsService';
 import { getAccessToken } from '../lib/authService';
-import { cardEntranceVariants, containerStaggerVariants, chartEntranceVariants } from '../lib/animationVariants';
 import { 
   ResponsiveContainer, 
   LineChart, 
   Line, 
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis, 
@@ -32,15 +27,11 @@ import {
 } from 'recharts';
 import { 
   Search, 
-  TrendingUp, 
-  TrendingDown,
   AlertTriangle, 
-  CheckCircle2, 
   RotateCw, 
   BrainCircuit, 
   MapPin, 
   Calendar, 
-  Layers, 
   Info, 
   ShieldCheck,
   ExternalLink,
@@ -50,9 +41,6 @@ import {
   Compass,
   Activity,
   History,
-  BarChart3,
-  Sliders,
-  Maximize2,
   FileText
 } from 'lucide-react';
 import AtmosphericColumn3D from '../components/AtmosphericColumn3D';
@@ -60,7 +48,7 @@ import AtmosphericColumn3D from '../components/AtmosphericColumn3D';
 type ActiveViewMode = 'detective' | 'historical' | '3d-column';
 
 export default function TrendDetective() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   // Mode from URL query (e.g. ?mode=historical)
   const modeParam = searchParams.get('mode');
@@ -88,11 +76,10 @@ export default function TrendDetective() {
   // Chart display toggles
   const [showOLS, setShowOLS] = useState<boolean>(true);
   const [showSen, setShowSen] = useState<boolean>(true);
-  const [showEnvelope, setShowEnvelope] = useState<boolean>(true);
 
   // Async data & analysis states
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState<boolean>(false);
   const [investigationData, setInvestigationData] = useState<NasaDailyAnnualInvestigationResult | null>(null);
   const [analysis, setAnalysis] = useState<AnnualTrendAnalysisResult | null>(null);
@@ -234,13 +221,11 @@ export default function TrendDetective() {
     }
 
     const firstYear = investigationData.annualPoints[0]?.year || startYear;
-    // Calculate 2001-2010 baseline if available, otherwise mean
     const baselineSlice = investigationData.annualPoints.slice(0, Math.min(10, investigationData.annualPoints.length));
     const baselineMean = baselineSlice.reduce((s, p) => s + p.avgTemp, 0) / (baselineSlice.length || 1);
 
     return investigationData.annualPoints.map((pt, index) => {
       const fittedOLS = analysis.regression.fittedLine[index];
-      // Sen's slope line anchored at overall median
       const senTrendVal = analysis.stats.median + analysis.senSlope * (pt.year - (firstYear + Math.floor(analysis.stats.count / 2)));
       const anomaly = pt.avgTemp - baselineMean;
 
@@ -279,21 +264,21 @@ export default function TrendDetective() {
       <div className="space-y-5 max-w-[1700px] mx-auto pb-12 font-sans">
         
         {/* Top Control Bar with Mac Dots & Multi-Mode Navigation */}
-        <div className="bg-[#091122]/90 backdrop-blur-md border border-[#1b2b48] rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+        <div className="bg-[#232A3D] border border-[#48516A] rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 shadow-xl">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black/40 rounded-md border border-slate-800">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-[#1D2436] rounded-md border border-[#2D354A]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F16C72]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F0B44D]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#35C98B]"></span>
             </div>
-            <div className="h-4 w-px bg-slate-700"></div>
+            <div className="h-4 w-px bg-[#48516A]"></div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold tracking-wider text-white">EARTH SYSTEM TREND DETECTIVE</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-700/60 font-semibold">
+              <span className="text-xs font-mono font-bold tracking-wider text-[#F0EBDD]">EARTH SYSTEM TREND DETECTIVE</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#1D2436] text-[#A6B7D4] border border-[#48516A] font-semibold">
                 NASA POWER DAILY KERNEL
               </span>
               {isCached && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-950/90 text-purple-300 border border-purple-500/60 font-semibold animate-pulse flex items-center gap-1 shadow-sm shadow-purple-500/20">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#D28B71]/15 text-[#D28B71] border border-[#D28B71]/50 font-semibold flex items-center gap-1">
                   <span>⚡</span> [CACHED OBSERVATION]
                 </span>
               )}
@@ -301,13 +286,13 @@ export default function TrendDetective() {
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="flex items-center gap-1.5 bg-[#050913] p-1 rounded-lg border border-[#16243d]">
+          <div className="flex items-center gap-1.5 bg-[#1D2436] p-1 rounded-lg border border-[#48516A]">
             <button
               onClick={() => setActiveMode('detective')}
               className={`px-3 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeMode === 'detective'
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-[#A6B7D4] text-[#171B2B] font-bold shadow-sm'
+                  : 'text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#232A3D]'
               }`}
             >
               <Search className="w-3.5 h-3.5" />
@@ -317,8 +302,8 @@ export default function TrendDetective() {
               onClick={() => setActiveMode('historical')}
               className={`px-3 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeMode === 'historical'
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-[#A6B7D4] text-[#171B2B] font-bold shadow-sm'
+                  : 'text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#232A3D]'
               }`}
             >
               <History className="w-3.5 h-3.5" />
@@ -328,8 +313,8 @@ export default function TrendDetective() {
               onClick={() => setActiveMode('3d-column')}
               className={`px-3 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeMode === '3d-column'
-                  ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-[#D28B71] text-[#171B2B] font-bold shadow-sm'
+                  : 'text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#232A3D]'
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
@@ -343,35 +328,33 @@ export default function TrendDetective() {
           initial={{ opacity: 0, y: 12 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="relative overflow-hidden bg-gradient-to-r from-[#070e1c] via-[#0a1529] to-[#070f1e] border border-cyan-500/30 rounded-xl p-5 shadow-2xl shadow-cyan-950/20"
+          className="relative overflow-hidden bg-[#353D55] border border-[#48516A] rounded-xl p-5 shadow-xl"
         >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-          
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div className="space-y-2 max-w-4xl">
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-cyan-950/80 border border-cyan-500/40 rounded-full text-[11px] font-mono text-cyan-300">
-                <Award className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-[#232A3D] border border-[#48516A] rounded text-[11px] font-mono text-[#A6B7D4]">
+                <Award className="w-3.5 h-3.5 text-[#A6B7D4]" />
                 <span>NASA SPACE APPS CHALLENGE · BE AN EARTH SYSTEM TREND DETECTIVE</span>
               </div>
               
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-[#F0EBDD] tracking-tight">
                 Case Study: Nagpur Decadal Air Temperature Trajectory (2001–2025)
               </h1>
               
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Empirical environmental trend analysis using the official <strong>NASA POWER Daily Point API</strong>. 
-                Daily near-surface temperature (T2M) observations from MERRA-2 assimilation (<span className="text-cyan-300 font-mono font-bold">9,131 days</span>) aggregated into annual averages, 
+              <p className="text-xs text-[#B5BDCC] leading-relaxed">
+                Empirical environmental trend analysis using the official <strong className="text-[#F0EBDD]">NASA POWER Daily Point API</strong>. 
+                Daily near-surface temperature (T2M) observations from MERRA-2 assimilation (<span className="text-[#A6B7D4] font-mono font-bold">9,131 days</span>) aggregated into annual averages, 
                 evaluated with Ordinary Least Squares (OLS) regression, Sen's robust slope estimator, and the non-parametric Mann-Kendall test.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400 font-mono">
-                <span className="flex items-center gap-1.5 text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40">
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-[#B5BDCC] font-mono">
+                <span className="flex items-center gap-1.5 text-[#A6B7D4] bg-[#232A3D] px-2 py-0.5 rounded border border-[#48516A]">
                   <MapPin className="w-3.5 h-3.5" /> 21.1458° N, 79.0882° E
                 </span>
-                <span className="flex items-center gap-1.5 text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
+                <span className="flex items-center gap-1.5 text-[#F0B44D] bg-[#232A3D] px-2 py-0.5 rounded border border-[#48516A]">
                   <Thermometer className="w-3.5 h-3.5" /> T2M Air Temperature (°C)
                 </span>
-                <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">
+                <span className="flex items-center gap-1.5 text-[#35C98B] bg-[#232A3D] px-2 py-0.5 rounded border border-[#48516A]">
                   <Calendar className="w-3.5 h-3.5" /> 2001–2025 (25 Years Daily)
                 </span>
               </div>
@@ -381,127 +364,127 @@ export default function TrendDetective() {
               <button
                 onClick={handleLoadNagpurCaseStudy}
                 disabled={loading}
-                className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs tracking-wider rounded-lg transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#A6B7D4] hover:bg-[#b8c7e0] text-[#171B2B] font-black text-xs tracking-wider rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <Sparkles className="w-4 h-4 text-slate-950" />
+                <Sparkles className="w-4 h-4 text-[#171B2B]" />
                 <span>INVESTIGATE NAGPUR BENCHMARK</span>
               </button>
 
               <Link
                 to={`/ai-insights?lat=${investigationData?.lat || 21.1458}&lon=${investigationData?.lon || 79.0882}&param=T2M`}
-                className="px-4 py-2 bg-[#0c1424] hover:bg-[#121e36] text-slate-300 hover:text-white border border-[#1b2b48] rounded-lg text-xs font-mono flex items-center justify-center gap-1.5 transition-colors"
+                className="px-4 py-2 bg-[#232A3D] hover:bg-[#2B3349] text-[#F0EBDD] border border-[#48516A] rounded-lg text-xs font-mono flex items-center justify-center gap-1.5 transition-colors"
               >
-                <BrainCircuit className="w-3.5 h-3.5 text-cyan-400" />
+                <BrainCircuit className="w-3.5 h-3.5 text-[#D28B71]" />
                 <span>AI Scientific Synthesis</span>
               </Link>
             </div>
           </div>
         </motion.div>
 
-        {/* 6 Key Circular / Telemetry Gauges (Inspired by Meteo Intelligence Reference) */}
+        {/* 6 Key Telemetry Gauges */}
         {analysis && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {/* 1. Rate per Decade */}
-            <div className="bg-[#0b1322]/80 backdrop-blur-md border border-[#182742] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden group">
-              <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="text-[10px] font-mono uppercase text-[#B5BDCC] tracking-wider flex items-center justify-between">
                 <span>Slope Rate</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A6B7D4]"></span>
               </div>
               <div className="my-2">
                 <div className={`text-xl font-mono font-black ${
-                  analysis.mannKendall.trend === 'increasing' ? 'text-amber-400' :
-                  analysis.mannKendall.trend === 'decreasing' ? 'text-cyan-400' : 'text-slate-200'
+                  analysis.mannKendall.trend === 'increasing' ? 'text-[#F0B44D]' :
+                  analysis.mannKendall.trend === 'decreasing' ? 'text-[#A6B7D4]' : 'text-[#F0EBDD]'
                 }`}>
                   {analysis.regression.trendPerDecade > 0 ? '+' : ''}{analysis.regression.trendPerDecade.toFixed(3)}
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">°C / decade (OLS)</div>
+                <div className="text-[10px] font-mono text-[#B5BDCC]">°C / decade (OLS)</div>
               </div>
-              <div className="text-[9px] font-mono text-cyan-400/80">
+              <div className="text-[9px] font-mono text-[#A6B7D4]">
                 Annual: {(analysis.regression.slope).toFixed(4)} °C/yr
               </div>
             </div>
 
             {/* 2. Mann-Kendall Z-score */}
-            <div className="bg-[#0b1322]/80 backdrop-blur-md border border-[#182742] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
-              <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="text-[10px] font-mono uppercase text-[#B5BDCC] tracking-wider flex items-center justify-between">
                 <span>Mann-Kendall Z</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#35C98B]"></span>
               </div>
               <div className="my-2">
-                <div className="text-xl font-mono font-black text-white">
+                <div className="text-xl font-mono font-black text-[#F0EBDD]">
                   {analysis.mannKendall.z > 0 ? '+' : ''}{analysis.mannKendall.z.toFixed(3)}
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">Standardized Normal</div>
+                <div className="text-[10px] font-mono text-[#B5BDCC]">Standardized Normal</div>
               </div>
-              <div className="text-[9px] font-mono text-slate-400">
+              <div className="text-[9px] font-mono text-[#B5BDCC]">
                 S = {analysis.mannKendall.s} · Var: {analysis.mannKendall.varS.toFixed(0)}
               </div>
             </div>
 
             {/* 3. Significance P-Value */}
-            <div className="bg-[#0b1322]/80 backdrop-blur-md border border-[#182742] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
-              <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="text-[10px] font-mono uppercase text-[#B5BDCC] tracking-wider flex items-center justify-between">
                 <span>Significance (p)</span>
-                <span className={`w-1.5 h-1.5 rounded-full ${analysis.mannKendall.pValue < 0.05 ? 'bg-emerald-400' : 'bg-slate-500'}`}></span>
+                <span className={`w-1.5 h-1.5 rounded-full ${analysis.mannKendall.pValue < 0.05 ? 'bg-[#35C98B]' : 'bg-[#838FA3]'}`}></span>
               </div>
               <div className="my-2">
-                <div className={`text-xl font-mono font-black ${analysis.mannKendall.pValue < 0.05 ? 'text-emerald-400' : 'text-slate-300'}`}>
+                <div className={`text-xl font-mono font-black ${analysis.mannKendall.pValue < 0.05 ? 'text-[#35C98B]' : 'text-[#F0EBDD]'}`}>
                   {analysis.mannKendall.pValue < 0.001 ? '< 0.001' : analysis.mannKendall.pValue.toFixed(4)}
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">Threshold α = 0.05</div>
+                <div className="text-[10px] font-mono text-[#B5BDCC]">Threshold α = 0.05</div>
               </div>
-              <div className="text-[9px] font-mono text-emerald-400 font-semibold">
+              <div className="text-[9px] font-mono text-[#35C98B] font-semibold">
                 {analysis.mannKendall.pValue < 0.05 ? '★ STATISTICALLY SIGNIFICANT' : 'NO SIGNIFICANT TREND'}
               </div>
             </div>
 
             {/* 4. Sen's Robust Slope */}
-            <div className="bg-[#0b1322]/80 backdrop-blur-md border border-[#182742] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
-              <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="text-[10px] font-mono uppercase text-[#B5BDCC] tracking-wider flex items-center justify-between">
                 <span>Sen's Slope</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D28B71]"></span>
               </div>
               <div className="my-2">
-                <div className="text-xl font-mono font-black text-purple-300">
+                <div className="text-xl font-mono font-black text-[#D28B71]">
                   {analysis.senSlopePerDecade > 0 ? '+' : ''}{analysis.senSlopePerDecade.toFixed(3)}
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">°C / decade (Median)</div>
+                <div className="text-[10px] font-mono text-[#B5BDCC]">°C / decade (Median)</div>
               </div>
-              <div className="text-[9px] font-mono text-slate-400">
+              <div className="text-[9px] font-mono text-[#B5BDCC]">
                 Robust to outlier years
               </div>
             </div>
 
             {/* 5. R-Squared Goodness */}
-            <div className="bg-[#0b1322]/80 backdrop-blur-md border border-[#182742] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
-              <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="text-[10px] font-mono uppercase text-[#B5BDCC] tracking-wider flex items-center justify-between">
                 <span>R² Goodness</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A6B7D4]"></span>
               </div>
               <div className="my-2">
-                <div className="text-xl font-mono font-black text-blue-300">
+                <div className="text-xl font-mono font-black text-[#A6B7D4]">
                   {(analysis.regression.r2 * 100).toFixed(1)}%
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">Variance Explained</div>
+                <div className="text-[10px] font-mono text-[#B5BDCC]">Variance Explained</div>
               </div>
-              <div className="text-[9px] font-mono text-slate-400">
+              <div className="text-[9px] font-mono text-[#B5BDCC]">
                 r = {Math.sqrt(Math.max(0, analysis.regression.r2)).toFixed(3)}
               </div>
             </div>
 
             {/* 6. Observation Integrity */}
-            <div className="bg-[#0b1322]/80 backdrop-blur-md border border-[#182742] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
-              <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-3 flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="text-[10px] font-mono uppercase text-[#B5BDCC] tracking-wider flex items-center justify-between">
                 <span>Observations</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#35C98B]"></span>
               </div>
               <div className="my-2">
-                <div className="text-xl font-mono font-black text-white">
+                <div className="text-xl font-mono font-black text-[#F0EBDD]">
                   {investigationData?.totalDailyObservations.toLocaleString() || '9,131'}
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">Daily Observations</div>
+                <div className="text-[10px] font-mono text-[#B5BDCC]">Daily Observations</div>
               </div>
-              <div className="text-[9px] font-mono text-emerald-400">
+              <div className="text-[9px] font-mono text-[#35C98B]">
                 100% NASA Quality Valid
               </div>
             </div>
@@ -509,16 +492,16 @@ export default function TrendDetective() {
         )}
 
         {/* Parameters & Coordinate Console */}
-        <div className="bg-[#0a1120] border border-[#1b2b48] rounded-xl p-4 shadow-lg space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1b2b48] pb-3">
-            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
-              <Compass className="w-4 h-4 text-cyan-400" />
+        <div className="bg-[#232A3D] border border-[#48516A] rounded-xl p-4 shadow-lg space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#48516A] pb-3">
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#F0EBDD] uppercase tracking-wider">
+              <Compass className="w-4 h-4 text-[#A6B7D4]" />
               <span>Target Coordinates & Historical Bounds</span>
             </div>
             
             <button
               onClick={() => setIsCustom(!isCustom)}
-              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              className="text-xs font-mono text-[#A6B7D4] hover:text-[#F0EBDD] transition-colors cursor-pointer"
             >
               {isCustom ? '← Switch to Benchmark Presets' : '+ Enter Custom Coordinates'}
             </button>
@@ -527,14 +510,14 @@ export default function TrendDetective() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Location Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono text-slate-300 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-cyan-400" /> Geographic Station
+              <label className="text-xs font-mono text-[#B5BDCC] flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#A6B7D4]" /> Geographic Station
               </label>
               {!isCustom ? (
                 <select
                   value={selectedPresetIdx}
                   onChange={(e) => setSelectedPresetIdx(Number(e.target.value))}
-                  className="w-full bg-[#060c18] border border-[#1b2b48] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 font-medium"
+                  className="w-full bg-[#1D2436] border border-[#48516A] rounded-lg px-3 py-2 text-xs font-mono text-[#F0EBDD] focus:outline-none focus:border-[#A6B7D4] font-medium"
                 >
                   {PRESET_LOCATIONS.map((loc, idx) => (
                     <option key={loc.name} value={idx}>
@@ -550,7 +533,7 @@ export default function TrendDetective() {
                     placeholder="Lat"
                     value={customLat}
                     onChange={(e) => setCustomLat(parseFloat(e.target.value) || 0)}
-                    className="bg-[#060c18] border border-[#1b2b48] rounded-lg px-2.5 py-1.5 text-xs font-mono text-white"
+                    className="bg-[#1D2436] border border-[#48516A] rounded-lg px-2.5 py-1.5 text-xs font-mono text-[#F0EBDD]"
                   />
                   <input
                     type="number"
@@ -558,11 +541,11 @@ export default function TrendDetective() {
                     placeholder="Lon"
                     value={customLon}
                     onChange={(e) => setCustomLon(parseFloat(e.target.value) || 0)}
-                    className="bg-[#060c18] border border-[#1b2b48] rounded-lg px-2.5 py-1.5 text-xs font-mono text-white"
+                    className="bg-[#1D2436] border border-[#48516A] rounded-lg px-2.5 py-1.5 text-xs font-mono text-[#F0EBDD]"
                   />
                 </div>
               )}
-              <div className="text-[10px] font-mono text-slate-400">
+              <div className="text-[10px] font-mono text-[#838FA3]">
                 {!isCustom 
                   ? `${PRESET_LOCATIONS[selectedPresetIdx].lat.toFixed(4)}°N, ${PRESET_LOCATIONS[selectedPresetIdx].lon.toFixed(4)}°E` 
                   : `Custom: ${customLat.toFixed(4)}°N, ${customLon.toFixed(4)}°E`}
@@ -571,31 +554,31 @@ export default function TrendDetective() {
 
             {/* Variable Indicator */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono text-slate-300 flex items-center gap-1.5">
-                <Thermometer className="w-3.5 h-3.5 text-amber-400" /> Environmental Variable
+              <label className="text-xs font-mono text-[#B5BDCC] flex items-center gap-1.5">
+                <Thermometer className="w-3.5 h-3.5 text-[#F0B44D]" /> Environmental Variable
               </label>
-              <div className="w-full bg-[#060c18] border border-[#1b2b48] rounded-lg px-3 py-2 text-xs font-mono text-white flex items-center justify-between">
-                <span className="font-bold text-cyan-300">T2M (Air Temperature)</span>
-                <span className="text-[11px] font-mono text-slate-400">°C (2M Altitude)</span>
+              <div className="w-full bg-[#1D2436] border border-[#48516A] rounded-lg px-3 py-2 text-xs font-mono text-[#F0EBDD] flex items-center justify-between">
+                <span className="font-bold text-[#A6B7D4]">T2M (Air Temperature)</span>
+                <span className="text-[11px] font-mono text-[#B5BDCC]">°C (2M Altitude)</span>
               </div>
-              <div className="text-[10px] font-mono text-slate-400">
+              <div className="text-[10px] font-mono text-[#838FA3]">
                 NASA MERRA-2 Assimilated Near-Surface
               </div>
             </div>
 
             {/* Temporal Bounds */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono text-slate-300 flex items-center justify-between">
+              <label className="text-xs font-mono text-[#B5BDCC] flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-cyan-400" /> Observation Range
+                  <Calendar className="w-3.5 h-3.5 text-[#A6B7D4]" /> Observation Range
                 </span>
-                <span className="text-[10px] font-mono text-cyan-400">{endYear - startYear + 1} Years</span>
+                <span className="text-[10px] font-mono text-[#A6B7D4]">{endYear - startYear + 1} Years</span>
               </label>
               <div className="flex items-center gap-2">
                 <select
                   value={startYear}
                   onChange={(e) => setStartYear(Number(e.target.value))}
-                  className="w-1/2 bg-[#060c18] border border-[#1b2b48] rounded-lg px-2.5 py-2 text-xs font-mono text-white"
+                  className="w-1/2 bg-[#1D2436] border border-[#48516A] rounded-lg px-2.5 py-2 text-xs font-mono text-[#F0EBDD]"
                 >
                   {[2001, 2005, 2010, 2015].map(yr => (
                     <option key={yr} value={yr}>From {yr}</option>
@@ -604,14 +587,14 @@ export default function TrendDetective() {
                 <select
                   value={endYear}
                   onChange={(e) => setEndYear(Number(e.target.value))}
-                  className="w-1/2 bg-[#060c18] border border-[#1b2b48] rounded-lg px-2.5 py-2 text-xs font-mono text-white"
+                  className="w-1/2 bg-[#1D2436] border border-[#48516A] rounded-lg px-2.5 py-2 text-xs font-mono text-[#F0EBDD]"
                 >
                   {[2020, 2022, 2024, 2025].map(yr => (
                     <option key={yr} value={yr}>To {yr}</option>
                   ))}
                 </select>
               </div>
-              <div className="text-[10px] font-mono text-slate-400">
+              <div className="text-[10px] font-mono text-[#838FA3]">
                 NASA Daily Time-Series Resolution
               </div>
             </div>
@@ -621,7 +604,7 @@ export default function TrendDetective() {
               <button
                 onClick={() => runInvestigation(true)}
                 disabled={loading}
-                className="w-full bg-[#111e38] hover:bg-[#182c52] text-cyan-300 hover:text-white border border-cyan-500/40 rounded-lg py-2.5 px-4 text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                className="w-full bg-[#353D55] hover:bg-[#2B3349] text-[#A6B7D4] hover:text-[#F0EBDD] border border-[#48516A] rounded-lg py-2.5 px-4 text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
               >
                 <RotateCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                 <span>{loading ? 'Retrieving Observations...' : 'Re-Run Mann-Kendall Kernel'}</span>
@@ -634,11 +617,11 @@ export default function TrendDetective() {
         {activeMode === 'detective' && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
             {/* Main Interactive Chart Section (3 Columns) */}
-            <div className="lg:col-span-3 bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1b2b48] pb-3">
+            <div className="lg:col-span-3 bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#48516A] pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></div>
-                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#A6B7D4]"></div>
+                  <h3 className="text-xs font-mono font-bold text-[#F0EBDD] uppercase tracking-wider">
                     Annual Mean Temperature Time-Series & Statistical Fits
                   </h3>
                 </div>
@@ -649,8 +632,8 @@ export default function TrendDetective() {
                     onClick={() => setShowOLS(!showOLS)}
                     className={`px-2.5 py-1 rounded border text-[11px] transition-all cursor-pointer ${
                       showOLS 
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-semibold' 
-                        : 'bg-transparent text-slate-500 border-slate-700'
+                        ? 'bg-[#F0B44D]/20 text-[#F0B44D] border-[#F0B44D]/60 font-semibold' 
+                        : 'bg-[#1D2436] text-[#838FA3] border-[#2D354A]'
                     }`}
                   >
                     OLS Regression
@@ -659,8 +642,8 @@ export default function TrendDetective() {
                     onClick={() => setShowSen(!showSen)}
                     className={`px-2.5 py-1 rounded border text-[11px] transition-all cursor-pointer ${
                       showSen 
-                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 font-semibold' 
-                        : 'bg-transparent text-slate-500 border-slate-700'
+                        ? 'bg-[#D28B71]/20 text-[#D28B71] border-[#D28B71]/60 font-semibold' 
+                        : 'bg-[#1D2436] text-[#838FA3] border-[#2D354A]'
                     }`}
                   >
                     Sen's Median Line
@@ -668,7 +651,7 @@ export default function TrendDetective() {
                   <button
                     onClick={handleExportToDocs}
                     disabled={savingDoc}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded border border-blue-400 font-semibold text-[11px] transition-all cursor-pointer hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1 bg-[#232A3D] hover:bg-[#2B3349] text-[#A6B7D4] rounded border border-[#48516A] font-semibold text-[11px] transition-all cursor-pointer disabled:opacity-50"
                   >
                     {savingDoc ? 'Saving...' : <><FileText className="w-3 h-3"/> Save to Docs</>}
                   </button>
@@ -678,31 +661,31 @@ export default function TrendDetective() {
               {/* Chart */}
               <div className="h-80 w-full">
                 {loading ? (
-                  <div className="h-full flex items-center justify-center flex-col gap-3 text-slate-400 font-mono text-xs">
-                    <RotateCw className="w-8 h-8 text-cyan-400 animate-spin" />
+                  <div className="h-full flex items-center justify-center flex-col gap-3 text-[#B5BDCC] font-mono text-xs">
+                    <RotateCw className="w-8 h-8 text-[#A6B7D4] animate-spin" />
                     <span>Ingesting NASA POWER Daily Observations...</span>
                   </div>
                 ) : chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#132238" vertical={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2D354A" vertical={false} />
                       <XAxis 
                         dataKey="year" 
-                        stroke="#475569" 
-                        tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                        stroke="#48516A" 
+                        tick={{ fill: '#838FA3', fontSize: 11, fontFamily: 'monospace' }}
                       />
                       <YAxis 
                         domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                        stroke="#475569"
-                        tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                        stroke="#48516A"
+                        tick={{ fill: '#838FA3', fontSize: 11, fontFamily: 'monospace' }}
                         unit="°C"
                       />
                       <Tooltip
                         contentStyle={{ 
-                          backgroundColor: '#070d18', 
-                          borderColor: '#1e3352', 
+                          backgroundColor: '#232A3D', 
+                          borderColor: '#48516A', 
                           borderRadius: '8px',
-                          color: '#f8fafc',
+                          color: '#F0EBDD',
                           fontFamily: 'monospace',
                           fontSize: '11px'
                         }}
@@ -714,17 +697,17 @@ export default function TrendDetective() {
                         type="monotone" 
                         dataKey="observed" 
                         name="Observed Annual Mean (°C)" 
-                        stroke="#06b6d4" 
+                        stroke="#A6B7D4" 
                         strokeWidth={2.5}
-                        dot={{ r: 4, fill: '#06b6d4' }}
-                        activeDot={{ r: 6, fill: '#38bdf8' }}
+                        dot={{ r: 4, fill: '#A6B7D4' }}
+                        activeDot={{ r: 6, fill: '#F0EBDD' }}
                       />
                       {showOLS && (
                         <Line 
                           type="monotone" 
                           dataKey="olsTrend" 
                           name="Linear Regression (OLS)" 
-                          stroke="#f59e0b" 
+                          stroke="#F0B44D" 
                           strokeWidth={2}
                           strokeDasharray="4 4"
                           dot={false}
@@ -735,7 +718,7 @@ export default function TrendDetective() {
                           type="monotone" 
                           dataKey="senTrend" 
                           name="Sen's Slope Estimator" 
-                          stroke="#a855f7" 
+                          stroke="#D28B71" 
                           strokeWidth={2}
                           dot={false}
                         />
@@ -743,7 +726,7 @@ export default function TrendDetective() {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-slate-500 font-mono text-xs">
+                  <div className="h-full flex items-center justify-center text-[#838FA3] font-mono text-xs">
                     No observation points available.
                   </div>
                 )}
@@ -751,16 +734,16 @@ export default function TrendDetective() {
 
               {/* Empirical Findings Callout */}
               {analysis && (
-                <div className="bg-[#050b14] border border-[#14233a] rounded-lg p-3 text-xs font-mono text-slate-300 flex items-start gap-3">
-                  <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <div className="bg-[#232A3D] border border-[#48516A] rounded-lg p-3 text-xs font-mono text-[#B5BDCC] flex items-start gap-3">
+                  <Info className="w-4 h-4 text-[#A6B7D4] shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <div className="text-white font-bold">
+                    <div className="text-[#F0EBDD] font-bold">
                       EMPIRICAL RESULT: {analysis.mannKendall.trend.toUpperCase()} TREND ({analysis.mannKendall.pValue < 0.05 ? 'STATISTICALLY SIGNIFICANT' : 'NOT STATISTICALLY SIGNIFICANT'})
                     </div>
-                    <div className="text-slate-400 leading-relaxed">
+                    <div className="text-[#B5BDCC] leading-relaxed">
                       Over the {analysis.stats.count}-year period ({startYear}–{endYear}), annual mean air temperature changed at an estimated rate of{' '}
-                      <strong className="text-cyan-300 font-mono">{analysis.regression.trendPerDecade > 0 ? '+' : ''}{analysis.regression.trendPerDecade.toFixed(3)} °C / decade</strong> (OLS) and{' '}
-                      <strong className="text-purple-300 font-mono">{analysis.senSlopePerDecade > 0 ? '+' : ''}{analysis.senSlopePerDecade.toFixed(3)} °C / decade</strong> (Sen's Slope). 
+                      <strong className="text-[#A6B7D4] font-mono">{analysis.regression.trendPerDecade > 0 ? '+' : ''}{analysis.regression.trendPerDecade.toFixed(3)} °C / decade</strong> (OLS) and{' '}
+                      <strong className="text-[#D28B71] font-mono">{analysis.senSlopePerDecade > 0 ? '+' : ''}{analysis.senSlopePerDecade.toFixed(3)} °C / decade</strong> (Sen's Slope). 
                       The Mann-Kendall test yielded Z = {analysis.mannKendall.z.toFixed(3)}, p = {analysis.mannKendall.pValue.toFixed(4)}.
                     </div>
                   </div>
@@ -770,52 +753,53 @@ export default function TrendDetective() {
 
             {/* Right Diagnostic Engine Panel (1 Column) */}
             <div className="space-y-4">
-              {/* Statistical Summary Glass Card */}
-              <div className="bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl space-y-3">
-                <div className="flex items-center justify-between border-b border-[#1b2b48] pb-2">
-                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+              {/* Statistical Summary Card */}
+              <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-[#48516A] pb-2">
+                  <span className="text-xs font-mono font-bold text-[#F0EBDD] uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#A6B7D4]" />
                     Diagnostics & Hypotheses
                   </span>
-                  <span className="text-[10px] font-mono text-cyan-400">α = 0.05</span>
+                  <span className="text-[10px] font-mono text-[#A6B7D4]">α = 0.05</span>
                 </div>
 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Observed Mean</span>
-                    <span className="text-white font-bold">{analysis?.stats.mean.toFixed(2)} °C</span>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Observed Mean</span>
+                    <span className="text-[#F0EBDD] font-bold">{analysis?.stats.mean.toFixed(2)} °C</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Median (50th %ile)</span>
-                    <span className="text-white font-bold">{analysis?.stats.median.toFixed(2)} °C</span>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Median (50th %ile)</span>
+                    <span className="text-[#F0EBDD] font-bold">{analysis?.stats.median.toFixed(2)} °C</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-cyan-300 font-bold">{analysis?.stats.min.toFixed(2)} °C</span>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Historical Min</span>
+                    <span className="text-[#A6B7D4] font-bold">{analysis?.stats.min.toFixed(2)} °C</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Historical Max</span>
-                    <span className="text-amber-400 font-bold">{analysis?.stats.max.toFixed(2)} °C</span>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Historical Max</span>
+                    <span className="text-[#F0B44D] font-bold">{analysis?.stats.max.toFixed(2)} °C</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Kendall Score S</span>
-                    <span className="text-white font-bold">{analysis?.mannKendall.s}</span>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Kendall Score S</span>
+                    <span className="text-[#F0EBDD] font-bold">{analysis?.mannKendall.s}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Variance Var(S)</span>
-                    <span className="text-white font-bold">{analysis?.mannKendall.varS.toFixed(1)}</span>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Variance Var(S)</span>
+                    <span className="text-[#F0EBDD] font-bold">{analysis?.mannKendall.varS.toFixed(1)}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Lag-1 Autocorr (r₁)</span>
-                    <span className={`font-bold ${Math.abs(lag1Autocorr) > 0.25 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  <div className="flex justify-between py-1 border-b border-[#48516A]/60">
+                    <span className="text-[#B5BDCC]">Lag-1 Autocorr (r₁)</span>
+                    <span className={`font-bold ${Math.abs(lag1Autocorr) > 0.25 ? 'text-[#F0B44D]' : 'text-[#35C98B]'}`}>
                       {lag1Autocorr}
                     </span>
                   </div>
                 </div>
 
                 {/* Autocorrelation caveat warning */}
-                <div className="p-2.5 bg-[#050912] rounded-lg border border-[#132238] text-[10px] font-mono text-slate-400 space-y-1">
-                  <div className="text-slate-300 font-semibold flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3 text-amber-400" />
+                <div className="p-2.5 bg-[#232A3D] rounded-lg border border-[#48516A] text-[10px] font-mono text-[#B5BDCC] space-y-1">
+                  <div className="text-[#F0EBDD] font-semibold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3 text-[#F0B44D]" />
                     <span>Serial Correlation Caveat</span>
                   </div>
                   <p>
@@ -825,15 +809,15 @@ export default function TrendDetective() {
               </div>
 
               {/* Data Provenance Card */}
-              <div className="bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl space-y-2 text-xs font-mono">
-                <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl space-y-2 text-xs font-mono">
+                <div className="text-xs font-bold text-[#F0EBDD] uppercase tracking-wider flex items-center gap-1.5">
+                  <ExternalLink className="w-3.5 h-3.5 text-[#A6B7D4]" />
                   NASA Source Attribution
                 </div>
-                <div className="text-slate-400 text-[11px] leading-relaxed">
+                <div className="text-[#B5BDCC] text-[11px] leading-relaxed">
                   Dataset: NASA Langley Research Center POWER Project API. Assimilation engine: Modern-Era Retrospective analysis for Research and Applications, Version 2 (MERRA-2).
                 </div>
-                <div className="pt-2 text-[10px] text-cyan-400/90 font-mono">
+                <div className="pt-2 text-[10px] text-[#A6B7D4] font-mono">
                   Coordinate: {investigationData?.lat.toFixed(4)}°N, {investigationData?.lon.toFixed(4)}°E
                 </div>
               </div>
@@ -844,22 +828,22 @@ export default function TrendDetective() {
         {/* View Mode 2: Historical 25-Year Decomposition Analysis */}
         {activeMode === 'historical' && (
           <div className="space-y-5">
-            <div className="bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1b2b48] pb-3">
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#48516A] pb-3">
                 <div>
-                  <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">
+                  <h3 className="text-sm font-mono font-bold text-[#F0EBDD] uppercase tracking-wider">
                     25-Year Decadal Temperature Anomaly Barometer (2001–2025)
                   </h3>
-                  <p className="text-xs font-mono text-slate-400 mt-0.5">
+                  <p className="text-xs font-mono text-[#B5BDCC] mt-0.5">
                     Annual deviations calculated relative to the 2001–2010 decadal baseline mean.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-mono">
-                  <span className="flex items-center gap-1 text-amber-400">
-                    <span className="w-2.5 h-2.5 rounded bg-amber-500"></span> Positive Anomaly (Warmer)
+                  <span className="flex items-center gap-1 text-[#F0B44D]">
+                    <span className="w-2.5 h-2.5 rounded bg-[#F0B44D]"></span> Positive Anomaly (Warmer)
                   </span>
-                  <span className="flex items-center gap-1 text-cyan-400">
-                    <span className="w-2.5 h-2.5 rounded bg-cyan-500"></span> Negative Anomaly (Cooler)
+                  <span className="flex items-center gap-1 text-[#A6B7D4]">
+                    <span className="w-2.5 h-2.5 rounded bg-[#A6B7D4]"></span> Negative Anomaly (Cooler)
                   </span>
                 </div>
               </div>
@@ -868,32 +852,32 @@ export default function TrendDetective() {
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#132238" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2D354A" vertical={false} />
                     <XAxis 
                       dataKey="year" 
-                      stroke="#475569" 
-                      tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                      stroke="#48516A" 
+                      tick={{ fill: '#838FA3', fontSize: 11, fontFamily: 'monospace' }}
                     />
                     <YAxis 
-                      stroke="#475569" 
-                      tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                      stroke="#48516A" 
+                      tick={{ fill: '#838FA3', fontSize: 11, fontFamily: 'monospace' }}
                       unit="°C"
                     />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: '#070d18', 
-                        borderColor: '#1e3352', 
+                        backgroundColor: '#232A3D', 
+                        borderColor: '#48516A', 
                         borderRadius: '8px',
-                        color: '#f8fafc',
+                        color: '#F0EBDD',
                         fontFamily: 'monospace',
                         fontSize: '11px'
                       }}
                     />
-                    <ReferenceLine y={0} stroke="#475569" strokeWidth={1.5} />
+                    <ReferenceLine y={0} stroke="#48516A" strokeWidth={1.5} />
                     <Bar 
                       dataKey="anomaly" 
                       name="Temperature Anomaly (°C)" 
-                      fill="#06b6d4"
+                      fill="#A6B7D4"
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -901,20 +885,20 @@ export default function TrendDetective() {
             </div>
 
             {/* Annual Observations Ledger Table */}
-            <div className="bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-[#1b2b48] pb-3 mb-3">
-                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <History className="w-4 h-4 text-cyan-400" />
+            <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl">
+              <div className="flex items-center justify-between border-b border-[#48516A] pb-3 mb-3">
+                <h3 className="text-xs font-mono font-bold text-[#F0EBDD] uppercase tracking-wider flex items-center gap-2">
+                  <History className="w-4 h-4 text-[#A6B7D4]" />
                   Annual Observations Ledger (Verified Daily Ingestion)
                 </h3>
-                <span className="text-[10px] font-mono text-slate-400">
+                <span className="text-[10px] font-mono text-[#B5BDCC]">
                   {chartData.length} Valid Observation Epochs
                 </span>
               </div>
 
               <div className="overflow-x-auto max-h-72 scrollbar-thin">
                 <table className="w-full text-left font-mono text-xs">
-                  <thead className="bg-[#050912] text-slate-400 text-[10px] uppercase sticky top-0">
+                  <thead className="bg-[#1D2436] text-[#838FA3] text-[10px] uppercase sticky top-0">
                     <tr>
                       <th className="py-2 px-3">Year</th>
                       <th className="py-2 px-3">Annual Mean T2M</th>
@@ -925,19 +909,19 @@ export default function TrendDetective() {
                       <th className="py-2 px-3">Data Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  <tbody className="divide-y divide-[#48516A]/60 text-[#B5BDCC]">
                     {chartData.map((row) => (
-                      <tr key={row.year} className="hover:bg-cyan-950/20">
-                        <td className="py-2 px-3 font-bold text-white">{row.year}</td>
-                        <td className="py-2 px-3 text-cyan-300 font-bold">{row.observed.toFixed(2)} °C</td>
-                        <td className="py-2 px-3 text-slate-400">{row.minDaily.toFixed(1)} °C</td>
-                        <td className="py-2 px-3 text-amber-400">{row.maxDaily.toFixed(1)} °C</td>
-                        <td className="py-2 px-3 text-emerald-400">{row.validDays} / 365</td>
-                        <td className={`py-2 px-3 font-semibold ${row.anomaly >= 0 ? 'text-amber-400' : 'text-cyan-400'}`}>
+                      <tr key={row.year} className="hover:bg-[#2B3349]">
+                        <td className="py-2 px-3 font-bold text-[#F0EBDD]">{row.year}</td>
+                        <td className="py-2 px-3 text-[#A6B7D4] font-bold">{row.observed.toFixed(2)} °C</td>
+                        <td className="py-2 px-3 text-[#B5BDCC]">{row.minDaily.toFixed(1)} °C</td>
+                        <td className="py-2 px-3 text-[#F0B44D]">{row.maxDaily.toFixed(1)} °C</td>
+                        <td className="py-2 px-3 text-[#35C98B]">{row.validDays} / 365</td>
+                        <td className={`py-2 px-3 font-semibold ${row.anomaly >= 0 ? 'text-[#F0B44D]' : 'text-[#A6B7D4]'}`}>
                           {row.anomaly >= 0 ? '+' : ''}{row.anomaly.toFixed(2)} °C
                         </td>
                         <td className="py-2 px-3">
-                          <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] bg-[#35C98B]/15 text-[#35C98B] border border-[#35C98B]/40">
                             VERIFIED NASA
                           </span>
                         </td>
@@ -952,22 +936,22 @@ export default function TrendDetective() {
 
         {/* View Mode 3: 3D Boundary Layer Column */}
         {activeMode === '3d-column' && (
-          <div className="bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#1b2b48] pb-3">
+          <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#48516A] pb-3">
               <div>
-                <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">
+                <h3 className="text-sm font-mono font-bold text-[#F0EBDD] uppercase tracking-wider">
                   Atmospheric Boundary Layer (PBL) 3D Trapping Simulation
                 </h3>
-                <p className="text-xs font-mono text-slate-400">
+                <p className="text-xs font-mono text-[#B5BDCC]">
                   Interactive WebGL simulation demonstrating how surface thermal inversions trap PM2.5 aerosols in the lower 300 meters.
                 </p>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-950/70 text-purple-300 border border-purple-800/50">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#232A3D] text-[#D28B71] border border-[#D28B71]/40">
                 THREE.JS KERNEL
               </span>
             </div>
 
-            <div className="h-[520px] w-full rounded-lg overflow-hidden border border-[#14233a]">
+            <div className="h-[520px] w-full rounded-lg overflow-hidden border border-[#48516A]">
               <AtmosphericColumn3D />
             </div>
           </div>

@@ -1,3 +1,8 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { clsx } from 'clsx';
@@ -20,11 +25,11 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-[#03060E] text-slate-200 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#171B2B] text-[#F0EBDD] overflow-hidden font-sans">
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         ></div>
       )}
@@ -38,7 +43,7 @@ export default function DashboardLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header onToggleMobileSidebar={toggleMobileSidebar} />
-        <main className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-3.5 bg-[#03060E]">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 bg-[#171B2B]">
           <Outlet />
         </main>
       </div>

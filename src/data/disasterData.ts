@@ -104,58 +104,58 @@ export const HAZARDS_META: Record<HazardType, { label: string; icon: string; col
   flood: {
     label: 'Floods',
     icon: '💧',
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-950/60',
-    borderColor: 'border-blue-500/40'
+    color: 'text-[#A6B7D4]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#A6B7D4]/40'
   },
   cyclone: {
     label: 'Tropical Cyclones',
     icon: '🌀',
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-950/60',
-    borderColor: 'border-cyan-500/40'
+    color: 'text-[#A6B7D4]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#A6B7D4]/40'
   },
   earthquake: {
     label: 'Earthquakes',
     icon: '⚡',
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-950/60',
-    borderColor: 'border-amber-500/40'
+    color: 'text-[#F0B44D]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#F0B44D]/40'
   },
   drought: {
     label: 'Droughts',
     icon: '☀️',
-    color: 'text-yellow-400',
-    bgColor: 'bg-yellow-950/60',
-    borderColor: 'border-yellow-500/40'
+    color: 'text-[#F0B44D]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#F0B44D]/40'
   },
   wildfire: {
     label: 'Wildfires',
     icon: '🔥',
-    color: 'text-rose-400',
-    bgColor: 'bg-rose-950/60',
-    borderColor: 'border-rose-500/40'
+    color: 'text-[#F16C72]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#F16C72]/40'
   },
   heatwave: {
     label: 'Extreme Heat',
     icon: '🌡️',
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-950/60',
-    borderColor: 'border-orange-500/40'
+    color: 'text-[#D28B71]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#D28B71]/40'
   },
   volcano: {
     label: 'Volcanoes',
     icon: '🌋',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-950/60',
-    borderColor: 'border-purple-500/40'
+    color: 'text-[#D28B71]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#D28B71]/40'
   },
   tsunami: {
     label: 'Tsunamis',
     icon: '🌊',
-    color: 'text-teal-400',
-    bgColor: 'bg-teal-950/60',
-    borderColor: 'border-teal-500/40'
+    color: 'text-[#8296B5]',
+    bgColor: 'bg-[#232A3D]',
+    borderColor: 'border-[#8296B5]/40'
   }
 };
 

@@ -104,15 +104,15 @@ const PERSONAS = [
     name: 'Atmospheric Scientist',
     expert: 'Dr. Elena Vance',
     badge: 'Boundary Layer & Inversions',
-    accentBorder: 'border-cyan-500/60',
-    accentText: 'text-cyan-400',
-    accentBg: 'bg-cyan-950/40',
+    accentBorder: 'border-[#A6B7D4]',
+    accentText: 'text-[#A6B7D4]',
+    accentBg: 'bg-[#353D55]',
     description: 'Planetary boundary layer (PBL) dynamics, nocturnal radiation inversions, aerosol reanalysis, WHO guidelines.',
     questions: [
-      (loc: string, param: string) => `Explain boundary layer inversion in ${loc}`,
-      (loc: string, param: string) => `How does precipitation wash out ${param}?`,
-      (loc: string, param: string) => `Is ${loc} experiencing seasonal thermal stagnation?`,
-      (loc: string, param: string) => `Compare ${param} against WHO 24-hr threshold`
+      (loc: string, _param: string) => `Explain boundary layer inversion in ${loc}`,
+      (_loc: string, param: string) => `How does precipitation wash out ${param}?`,
+      (loc: string, _param: string) => `Is ${loc} experiencing seasonal thermal stagnation?`,
+      (_loc: string, param: string) => `Compare ${param} against WHO 24-hr threshold`
     ]
   },
   {
@@ -120,15 +120,15 @@ const PERSONAS = [
     name: 'Disaster Risk Analyst',
     expert: 'Marcus Chen',
     badge: 'INFORM Risk & EM-DAT',
-    accentBorder: 'border-amber-500/60',
-    accentText: 'text-amber-400',
-    accentBg: 'bg-amber-950/40',
+    accentBorder: 'border-[#F0B44D]',
+    accentText: 'text-[#F0B44D]',
+    accentBg: 'bg-[#353D55]',
     description: 'INFORM multi-hazard index, CRED EM-DAT history, GDACS alerts, 72h latency protocols.',
     questions: [
-      (loc: string, param: string) => `What is the multi-hazard risk profile of this region?`,
-      (loc: string, param: string) => `How should a 72-hour blindspot alert be handled?`,
-      (loc: string, param: string) => `Distinguish historical disaster losses vs active emergencies`,
-      (loc: string, param: string) => `Evaluate compounding flood, drought and heat risks`
+      (_loc: string, _param: string) => `What is the multi-hazard risk profile of this region?`,
+      (_loc: string, _param: string) => `How should a 72-hour blindspot alert be handled?`,
+      (_loc: string, _param: string) => `Distinguish historical disaster losses vs active emergencies`,
+      (_loc: string, _param: string) => `Evaluate compounding flood, drought and heat risks`
     ]
   },
   {
@@ -136,15 +136,15 @@ const PERSONAS = [
     name: 'Data Statistician',
     expert: 'Dr. Priya Patel',
     badge: 'Mann-Kendall & OLS',
-    accentBorder: 'border-purple-500/60',
-    accentText: 'text-purple-400',
-    accentBg: 'bg-purple-950/40',
+    accentBorder: 'border-[#D28B71]',
+    accentText: 'text-[#D28B71]',
+    accentBg: 'bg-[#353D55]',
     description: 'Mann-Kendall p-value scrutiny, OLS regression slope, autocorrelation, avoiding causal leaps.',
     questions: [
-      (loc: string, param: string) => `Evaluate statistical significance and Mann-Kendall p-value`,
-      (loc: string, param: string) => `Why does trend association not prove causation here?`,
-      (loc: string, param: string) => `Does seasonal autocorrelation distort Sen's slope?`,
-      (loc: string, param: string) => `Interpret the 95% confidence interval for this slope`
+      (_loc: string, _param: string) => `Evaluate statistical significance and Mann-Kendall p-value`,
+      (_loc: string, _param: string) => `Why does trend association not prove causation here?`,
+      (_loc: string, _param: string) => `Does seasonal autocorrelation distort Sen's slope?`,
+      (_loc: string, _param: string) => `Interpret the 95% confidence interval for this slope`
     ]
   },
   {
@@ -152,15 +152,15 @@ const PERSONAS = [
     name: 'Citizen Educator',
     expert: 'Maya Lin',
     badge: 'Plain-English Analogies',
-    accentBorder: 'border-emerald-500/60',
-    accentText: 'text-emerald-400',
-    accentBg: 'bg-emerald-950/40',
+    accentBorder: 'border-[#35C98B]',
+    accentText: 'text-[#35C98B]',
+    accentBg: 'bg-[#353D55]',
     description: 'Accessible translations, plain-English analogies, health advice, community action.',
     questions: [
-      (loc: string, param: string) => `Explain temperature inversion in simple terms`,
-      (loc: string, param: string) => `What should vulnerable groups do during high particulate days?`,
-      (loc: string, param: string) => `What does a 10-year trend mean for daily life in ${loc}?`,
-      (loc: string, param: string) => `Practical air quality safety actions for schools`
+      (_loc: string, _param: string) => `Explain temperature inversion in simple terms`,
+      (_loc: string, _param: string) => `What should vulnerable groups do during high particulate days?`,
+      (loc: string, _param: string) => `What does a 10-year trend mean for daily life in ${loc}?`,
+      (_loc: string, _param: string) => `Practical air quality safety actions for schools`
     ]
   }
 ];
@@ -178,11 +178,11 @@ export default function AIInsights() {
   const [loadingData, setLoadingData] = useState<boolean>(false);
   const [nasaData, setNasaData] = useState<LocationDataResult | null>(null);
   const [analysis, setAnalysis] = useState<TrendAnalysisResult | null>(null);
-  const [dataError, setDataError] = useState<string | null>(null);
+  const [, setDataError] = useState<string | null>(null);
 
   // Gemini AI generation state (Structured Dossier)
   const [generatingAi, setGeneratingAi] = useState<boolean>(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  const [, setAiError] = useState<string | null>(null);
   const [aiInsight, setAiInsight] = useState<AiInsightResponse | null>(null);
   const [aiMeta, setAiMeta] = useState<{ model: string; generatedAt: string } | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
@@ -338,7 +338,7 @@ export default function AIInsights() {
       }
 
       setAiInsight(data.insight);
-        setAiMeta({
+      setAiMeta({
         model: data.meta?.model || 'gemini-4-hydrogen',
         generatedAt: data.meta?.generatedAt || new Date().toISOString()
       });
@@ -569,19 +569,19 @@ ${aiInsight.limitationsAndUncertainty}
   return (
     <div className="space-y-5 max-w-[1700px] mx-auto pb-12 font-sans">
       
-      {/* Top Mac Window Control Bar */}
-      <div className="bg-[#091122]/90 backdrop-blur-md border border-[#1b2b48] rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+      {/* Top Window Control Bar */}
+      <div className="bg-[#232A3D] border border-[#48516A] rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-black/40 rounded-md border border-slate-800">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-[#1D2436] rounded-md border border-[#2D354A]">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F16C72]"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F0B44D]"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#35C98B]"></span>
           </div>
-          <div className="h-4 w-px bg-slate-700"></div>
+          <div className="h-4 w-px bg-[#48516A]"></div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold tracking-wider text-white">EARTH TRACE CLIMATE AI INTELLIGENCE</span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-700/60 font-semibold flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-purple-400" />
+            <span className="text-xs font-mono font-bold tracking-wider text-[#F0EBDD]">EARTH TRACE CLIMATE AI INTELLIGENCE</span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#1D2436] text-[#D28B71] border border-[#D28B71]/40 font-semibold flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-[#D28B71]" />
               GEMINI 4 HYDROGEN & 3.1 FLASH-LITE DUAL ENGINE
             </span>
           </div>
@@ -589,78 +589,78 @@ ${aiInsight.limitationsAndUncertainty}
 
         {/* Telemetry Status Pills */}
         <div className="flex items-center gap-3 text-xs font-mono">
-          <span className="flex items-center gap-1.5 text-emerald-400">
+          <span className="flex items-center gap-1.5 text-[#35C98B]">
             <ShieldCheck className="w-3.5 h-3.5" /> Zero Hallucination Guard
           </span>
-          <span className="text-slate-600">·</span>
-          <span className="flex items-center gap-1.5 text-cyan-400">
+          <span className="text-[#48516A]">·</span>
+          <span className="flex items-center gap-1.5 text-[#A6B7D4]">
             <CheckCircle2 className="w-3.5 h-3.5" /> NASA Grounded
           </span>
         </div>
       </div>
 
       {/* Target Parameters Bar */}
-      <div className="bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Target Location */}
         <div className="space-y-1">
-          <label className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-cyan-400" /> Geographic Target
+          <label className="text-xs font-mono text-[#B5BDCC] flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#A6B7D4]" /> Geographic Target
           </label>
           <select
             value={selectedPresetIndex}
             onChange={(e) => setSelectedPresetIndex(Number(e.target.value))}
-            className="w-full bg-[#060c18] border border-[#1b2b48] rounded px-3 py-2 text-xs font-mono text-white"
+            className="w-full bg-[#1D2436] border border-[#48516A] rounded px-3 py-2 text-xs font-mono text-[#F0EBDD]"
           >
             {PRESET_LOCATIONS.map((loc, idx) => (
               <option key={loc.name} value={idx}>{loc.name} ({loc.region})</option>
             ))}
           </select>
-          <div className="text-[10px] font-mono text-slate-500">
+          <div className="text-[10px] font-mono text-[#838FA3]">
             {currentLocation.lat.toFixed(4)}°N, {currentLocation.lon.toFixed(4)}°E
           </div>
         </div>
 
         {/* Target Variable */}
         <div className="space-y-1">
-          <label className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-amber-400" /> Target Parameter
+          <label className="text-xs font-mono text-[#B5BDCC] flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-[#F0B44D]" /> Target Parameter
           </label>
           <select
             value={paramKey}
             onChange={(e) => setParamKey(e.target.value)}
-            className="w-full bg-[#060c18] border border-[#1b2b48] rounded px-3 py-2 text-xs font-mono text-white"
+            className="w-full bg-[#1D2436] border border-[#48516A] rounded px-3 py-2 text-xs font-mono text-[#F0EBDD]"
           >
             {Object.entries(NASA_PARAMETERS).map(([k, p]) => (
               <option key={k} value={k}>{p.name} ({p.units})</option>
             ))}
           </select>
-          <div className="text-[10px] font-mono text-slate-500">
+          <div className="text-[10px] font-mono text-[#838FA3]">
             {nasaData?.source || 'NASA MERRA-2'}
           </div>
         </div>
 
         {/* Time Horizon */}
         <div className="space-y-1">
-          <label className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-cyan-400" /> Observation Range
+          <label className="text-xs font-mono text-[#B5BDCC] flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-[#A6B7D4]" /> Observation Range
           </label>
           <div className="grid grid-cols-2 gap-2">
             <select
               value={startYear}
               onChange={(e) => setStartYear(Number(e.target.value))}
-              className="bg-[#060c18] border border-[#1b2b48] rounded px-2.5 py-2 text-xs font-mono text-white"
+              className="bg-[#1D2436] border border-[#48516A] rounded px-2.5 py-2 text-xs font-mono text-[#F0EBDD]"
             >
               {[2015, 2018, 2020].map(yr => <option key={yr} value={yr}>From {yr}</option>)}
             </select>
             <select
               value={endYear}
               onChange={(e) => setEndYear(Number(e.target.value))}
-              className="bg-[#060c18] border border-[#1b2b48] rounded px-2.5 py-2 text-xs font-mono text-white"
+              className="bg-[#1D2436] border border-[#48516A] rounded px-2.5 py-2 text-xs font-mono text-[#F0EBDD]"
             >
               {[2022, 2023, 2024, 2025].map(yr => <option key={yr} value={yr}>To {yr}</option>)}
             </select>
           </div>
-          <div className="text-[10px] font-mono text-cyan-400">
+          <div className="text-[10px] font-mono text-[#A6B7D4]">
             {endYear - startYear + 1} Years Ingested
           </div>
         </div>
@@ -670,9 +670,9 @@ ${aiInsight.limitationsAndUncertainty}
           <button
             onClick={handleGenerateAiExplanation}
             disabled={loadingData || generatingAi || !analysis}
-            className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-mono font-bold text-xs rounded-lg shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+            className="w-full py-2.5 bg-[#A6B7D4] hover:bg-[#b8c7e0] text-[#171B2B] font-mono font-bold text-xs rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
           >
-            <Sparkles className="w-4 h-4 text-slate-950" />
+            <Sparkles className="w-4 h-4 text-[#171B2B]" />
             <span>{generatingAi ? 'Synthesizing Dossier...' : 'Generate AI Synthesis'}</span>
           </button>
         </div>
@@ -682,39 +682,39 @@ ${aiInsight.limitationsAndUncertainty}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         {/* Left Side: Advanced Multi-Turn AI Co-Pilot Console (5 Columns) */}
-        <div className="lg:col-span-5 bg-[#08101d] border border-[#1b2b48] rounded-xl p-4 shadow-xl flex flex-col h-[750px]">
+        <div className="lg:col-span-5 bg-[#353D55] border border-[#48516A] rounded-xl p-4 shadow-xl flex flex-col h-[750px]">
           {/* Header & Controls */}
-          <div className="flex flex-wrap items-center justify-between border-b border-[#1b2b48] pb-3 mb-3 gap-2">
+          <div className="flex flex-wrap items-center justify-between border-b border-[#48516A] pb-3 mb-3 gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-cyan-950 border border-cyan-600/50 flex items-center justify-center">
-                <BrainCircuit className="w-4 h-4 text-cyan-400" />
+              <div className="w-7 h-7 rounded-lg bg-[#232A3D] border border-[#48516A] flex items-center justify-center">
+                <BrainCircuit className="w-4 h-4 text-[#A6B7D4]" />
               </div>
               <div>
-                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-bold text-[#F0EBDD] uppercase tracking-wider">
                   Earth Intelligence Co-Pilot
                 </h3>
-                <div className="text-[10px] font-mono text-cyan-400">Multi-Turn Scientific Chat</div>
+                <div className="text-[10px] font-mono text-[#A6B7D4]">Multi-Turn Scientific Chat</div>
               </div>
             </div>
 
             {/* Model & Clear Actions */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-[#050b14] border border-[#1b2b48] rounded px-2 py-1 text-[10px] font-mono">
-                <Cpu className="w-3 h-3 text-cyan-400" />
+              <div className="flex items-center gap-1 bg-[#1D2436] border border-[#48516A] rounded px-2 py-1 text-[10px] font-mono">
+                <Cpu className="w-3 h-3 text-[#A6B7D4]" />
                 <select
                   value={chatModel}
                   onChange={(e) => setChatModel(e.target.value)}
-                  className="bg-transparent text-slate-200 outline-none cursor-pointer"
+                  className="bg-transparent text-[#F0EBDD] outline-none cursor-pointer"
                 >
-                  <option value="gemini-4-hydrogen" className="bg-[#050b14] text-white">Gemini 4 Hydrogen (Grounded)</option>
-                  <option value="gemini-3.1-flash-lite" className="bg-[#050b14] text-white">Gemini 3.1 Flash-Lite (Fast)</option>
+                  <option value="gemini-4-hydrogen" className="bg-[#1D2436] text-[#F0EBDD]">Gemini 4 Hydrogen (Grounded)</option>
+                  <option value="gemini-3.1-flash-lite" className="bg-[#1D2436] text-[#F0EBDD]">Gemini 3.1 Flash-Lite (Fast)</option>
                 </select>
               </div>
 
               <button
                 onClick={handleClearChat}
                 title="Reset conversation"
-                className="p-1.5 bg-[#050b14] hover:bg-red-950/60 border border-[#1b2b48] hover:border-red-600/50 text-slate-400 hover:text-red-300 rounded transition-colors cursor-pointer"
+                className="p-1.5 bg-[#1D2436] hover:bg-[#F16C72]/15 border border-[#48516A] hover:border-[#F16C72]/50 text-[#B5BDCC] hover:text-[#F16C72] rounded transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -722,12 +722,12 @@ ${aiInsight.limitationsAndUncertainty}
           </div>
 
           {/* Persona Selector Tabs */}
-          <div className="space-y-1.5 pb-2.5 border-b border-[#132238]">
-            <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+          <div className="space-y-1.5 pb-2.5 border-b border-[#48516A]">
+            <div className="flex items-center justify-between text-[10px] font-mono text-[#B5BDCC]">
               <span className="uppercase tracking-wider flex items-center gap-1">
-                <UserCheck className="w-3 h-3 text-cyan-400" /> Expert Persona:
+                <UserCheck className="w-3 h-3 text-[#A6B7D4]" /> Expert Persona:
               </span>
-              <span className="text-cyan-400 font-semibold">
+              <span className="text-[#A6B7D4] font-semibold">
                 {PERSONAS.find(p => p.id === chatPersona)?.expert}
               </span>
             </div>
@@ -740,8 +740,8 @@ ${aiInsight.limitationsAndUncertainty}
                     onClick={() => setChatPersona(persona.id)}
                     className={`px-2 py-1.5 rounded text-[10px] font-mono transition-all text-left border cursor-pointer ${
                       isActive
-                        ? `${persona.accentBg} ${persona.accentBorder} ${persona.accentText} font-bold shadow-sm shadow-cyan-500/10`
-                        : 'bg-[#050b14] border-[#1b2b48] text-slate-400 hover:text-slate-200 hover:bg-[#0c1626]'
+                        ? `${persona.accentBg} ${persona.accentBorder} ${persona.accentText} font-bold shadow-sm`
+                        : 'bg-[#1D2436] border-[#2D354A] text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#232A3D]'
                     }`}
                   >
                     <div className="truncate">{persona.name}</div>
@@ -749,23 +749,23 @@ ${aiInsight.limitationsAndUncertainty}
                 );
               })}
             </div>
-            <div className="text-[9px] font-mono text-slate-400 italic">
+            <div className="text-[9px] font-mono text-[#B5BDCC] italic">
               {PERSONAS.find(p => p.id === chatPersona)?.description}
             </div>
           </div>
 
           {/* Grounding Mode Toggle */}
-          <div className="flex items-center justify-between py-2 border-b border-[#132238] text-[10px] font-mono">
-            <span className="text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <Compass className="w-3 h-3 text-cyan-400" /> Grounding:
+          <div className="flex items-center justify-between py-2 border-b border-[#48516A] text-[10px] font-mono">
+            <span className="text-[#B5BDCC] uppercase tracking-wider flex items-center gap-1">
+              <Compass className="w-3 h-3 text-[#A6B7D4]" /> Grounding:
             </span>
-            <div className="flex items-center gap-1 bg-[#050b14] p-0.5 rounded border border-[#1b2b48]">
+            <div className="flex items-center gap-1 bg-[#1D2436] p-0.5 rounded border border-[#48516A]">
               <button
                 onClick={() => setChatGrounding('none')}
                 className={`px-2 py-0.5 rounded text-[10px] transition-all cursor-pointer ${
                   chatGrounding === 'none'
-                    ? 'bg-slate-800 text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#353D55] text-[#F0EBDD] font-semibold'
+                    : 'text-[#838FA3] hover:text-[#F0EBDD]'
                 }`}
               >
                 Direct
@@ -774,8 +774,8 @@ ${aiInsight.limitationsAndUncertainty}
                 onClick={() => setChatGrounding('search')}
                 className={`px-2 py-0.5 rounded text-[10px] flex items-center gap-1 transition-all cursor-pointer ${
                   chatGrounding === 'search'
-                    ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/60 font-semibold'
-                    : 'text-slate-400 hover:text-cyan-300'
+                    ? 'bg-[#A6B7D4] text-[#171B2B] font-semibold'
+                    : 'text-[#838FA3] hover:text-[#A6B7D4]'
                 }`}
               >
                 <Search className="w-2.5 h-2.5" />
@@ -785,8 +785,8 @@ ${aiInsight.limitationsAndUncertainty}
                 onClick={() => setChatGrounding('maps')}
                 className={`px-2 py-0.5 rounded text-[10px] flex items-center gap-1 transition-all cursor-pointer ${
                   chatGrounding === 'maps'
-                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-semibold'
-                    : 'text-slate-400 hover:text-emerald-300'
+                    ? 'bg-[#35C98B]/20 text-[#35C98B] border border-[#35C98B]/50 font-semibold'
+                    : 'text-[#838FA3] hover:text-[#35C98B]'
                 }`}
               >
                 <MapPin className="w-2.5 h-2.5" />
@@ -796,10 +796,10 @@ ${aiInsight.limitationsAndUncertainty}
           </div>
 
           {/* Persona-Specific Quick Inquiries Chips */}
-          <div className="space-y-1.5 py-2 border-b border-[#132238]">
-            <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 uppercase">
+          <div className="space-y-1.5 py-2 border-b border-[#48516A]">
+            <div className="flex items-center justify-between text-[9px] font-mono text-[#838FA3] uppercase">
               <span>Domain Inquiries:</span>
-              <span className="text-cyan-400">Click to ask</span>
+              <span className="text-[#A6B7D4]">Click to ask</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {(PERSONAS.find(p => p.id === chatPersona)?.questions || []).map((qFn, idx) => {
@@ -809,7 +809,7 @@ ${aiInsight.limitationsAndUncertainty}
                     key={idx}
                     onClick={() => handleSendChat(questionText)}
                     disabled={isAsking}
-                    className="px-2 py-0.5 bg-[#050b14] hover:bg-cyan-950/60 border border-[#1b2b48] hover:border-cyan-500/50 rounded text-[9px] font-mono text-slate-300 hover:text-cyan-300 transition-all text-left cursor-pointer truncate max-w-[280px]"
+                    className="px-2 py-0.5 bg-[#1D2436] hover:bg-[#232A3D] border border-[#48516A] hover:border-[#A6B7D4] rounded text-[9px] font-mono text-[#B5BDCC] hover:text-[#F0EBDD] transition-all text-left cursor-pointer truncate max-w-[280px]"
                   >
                     {questionText}
                   </button>
@@ -822,10 +822,10 @@ ${aiInsight.limitationsAndUncertainty}
                   handleSendChat(`Search web for recent 2024-2026 NASA PACE and TEMPO atmospheric satellite publications.`);
                 }}
                 disabled={isAsking}
-                className="px-2 py-0.5 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-700/50 hover:border-purple-400 rounded text-[9px] font-mono text-purple-200 hover:text-purple-100 transition-all text-left cursor-pointer flex items-center gap-1"
+                className="px-2 py-0.5 bg-[#232A3D] hover:bg-[#2B3349] border border-[#D28B71]/50 rounded text-[9px] font-mono text-[#D28B71] transition-all text-left cursor-pointer flex items-center gap-1"
                 title="Search live web for NASA satellite findings"
               >
-                <Search className="w-2.5 h-2.5 text-purple-400" />
+                <Search className="w-2.5 h-2.5 text-[#D28B71]" />
                 <span>Search NASA PACE & TEMPO findings</span>
               </button>
               <button
@@ -834,10 +834,10 @@ ${aiInsight.limitationsAndUncertainty}
                   handleSendChat(`Search the web for the latest atmospheric news, air quality advisories, and inversion reports in ${currentLocation.name}.`);
                 }}
                 disabled={isAsking}
-                className="px-2 py-0.5 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-700/50 hover:border-cyan-400 rounded text-[9px] font-mono text-cyan-200 hover:text-cyan-100 transition-all text-left cursor-pointer flex items-center gap-1"
+                className="px-2 py-0.5 bg-[#232A3D] hover:bg-[#2B3349] border border-[#A6B7D4]/50 rounded text-[9px] font-mono text-[#A6B7D4] transition-all text-left cursor-pointer flex items-center gap-1"
                 title="Search live web for regional atmospheric news"
               >
-                <Search className="w-2.5 h-2.5 text-cyan-400" />
+                <Search className="w-2.5 h-2.5 text-[#A6B7D4]" />
                 <span>Search {currentLocation.name} atmospheric news</span>
               </button>
             </div>
@@ -850,32 +850,32 @@ ${aiInsight.limitationsAndUncertainty}
                 key={msg.id}
                 className={`p-3 rounded-lg text-xs font-mono leading-relaxed transition-all ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-r from-cyan-950/70 to-blue-950/60 border border-cyan-700/60 text-cyan-100 ml-6'
-                    : 'bg-[#050b14] border border-[#16243d] text-slate-200 mr-1'
+                    ? 'bg-[#232A3D] border border-[#A6B7D4]/60 text-[#F0EBDD] ml-6'
+                    : 'bg-[#1D2436] border border-[#2D354A] text-[#F0EBDD] mr-1'
                 }`}
               >
                 {/* Message Header */}
-                <div className="flex items-center justify-between text-[9px] text-slate-400 mb-1.5 pb-1 border-b border-slate-800/60">
+                <div className="flex items-center justify-between text-[9px] text-[#838FA3] mb-1.5 pb-1 border-b border-[#2D354A]">
                   <div className="flex items-center gap-1.5">
                     {msg.role === 'user' ? (
-                      <span className="font-bold text-cyan-300">INVESTIGATOR</span>
+                      <span className="font-bold text-[#A6B7D4]">INVESTIGATOR</span>
                     ) : (
                       <>
-                        <span className="font-bold text-purple-300">
+                        <span className="font-bold text-[#D28B71]">
                           {PERSONAS.find(p => p.id === msg.persona)?.expert || 'EARTH TRACE CO-PILOT'}
                         </span>
                         {msg.model && (
-                          <span className="px-1 py-0.2 bg-slate-900 border border-slate-700 rounded text-[8px] text-slate-400">
+                          <span className="px-1 py-0.2 bg-[#232A3D] border border-[#48516A] rounded text-[8px] text-[#B5BDCC]">
                             {msg.model}
                           </span>
                         )}
                         {msg.grounding === 'search' && (
-                          <span className="px-1 py-0.2 bg-cyan-950 text-cyan-300 border border-cyan-800 rounded text-[8px] flex items-center gap-0.5">
+                          <span className="px-1 py-0.2 bg-[#232A3D] text-[#A6B7D4] border border-[#48516A] rounded text-[8px] flex items-center gap-0.5">
                             <Search className="w-2 h-2" /> Search Grounded
                           </span>
                         )}
                         {msg.grounding === 'maps' && (
-                          <span className="px-1 py-0.2 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded text-[8px] flex items-center gap-0.5">
+                          <span className="px-1 py-0.2 bg-[#35C98B]/15 text-[#35C98B] border border-[#35C98B]/40 rounded text-[8px] flex items-center gap-0.5">
                             <MapPin className="w-2 h-2" /> Maps Grounded
                           </span>
                         )}
@@ -891,8 +891,8 @@ ${aiInsight.limitationsAndUncertainty}
                         title={speakingMsgId === msg.id ? 'Stop audio reading' : 'Listen with Audio Readout'}
                         className={`p-1 rounded cursor-pointer transition-colors ${
                           speakingMsgId === msg.id 
-                            ? 'bg-cyan-500/30 text-cyan-300 animate-pulse' 
-                            : 'text-slate-500 hover:text-cyan-300 hover:bg-slate-900'
+                            ? 'bg-[#A6B7D4]/30 text-[#A6B7D4] animate-pulse' 
+                            : 'text-[#838FA3] hover:text-[#A6B7D4] hover:bg-[#232A3D]'
                         }`}
                       >
                         {speakingMsgId === msg.id ? (
@@ -906,15 +906,15 @@ ${aiInsight.limitationsAndUncertainty}
                 </div>
 
                 {/* Content */}
-                <div className="whitespace-pre-wrap leading-relaxed text-slate-200">
+                <div className="whitespace-pre-wrap leading-relaxed text-[#F0EBDD]">
                   {msg.content}
                 </div>
 
                 {/* Grounding Sources (Search & Maps) */}
                 {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-2.5 pt-2 border-t border-[#16243d] space-y-1.5">
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Globe className="w-3 h-3 text-cyan-400" />
+                  <div className="mt-2.5 pt-2 border-t border-[#2D354A] space-y-1.5">
+                    <div className="text-[9px] font-bold text-[#B5BDCC] uppercase tracking-wider flex items-center gap-1">
+                      <Globe className="w-3 h-3 text-[#A6B7D4]" />
                       Grounding Citations & Spatial Sources:
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -926,14 +926,14 @@ ${aiInsight.limitationsAndUncertainty}
                           rel="noopener noreferrer"
                           className={`px-2 py-1 rounded text-[9px] font-mono flex items-center gap-1 border transition-all ${
                             src.type === 'maps'
-                              ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-200 hover:bg-emerald-900/80 hover:border-emerald-500'
-                              : 'bg-cyan-950/60 border-cyan-800/60 text-cyan-200 hover:bg-cyan-900/80 hover:border-cyan-500'
+                              ? 'bg-[#35C98B]/15 border-[#35C98B]/50 text-[#35C98B] hover:bg-[#35C98B]/25'
+                              : 'bg-[#232A3D] border-[#48516A] text-[#A6B7D4] hover:border-[#A6B7D4]'
                           }`}
                         >
                           {src.type === 'maps' ? (
-                            <MapPin className="w-2.5 h-2.5 text-emerald-400" />
+                            <MapPin className="w-2.5 h-2.5 text-[#35C98B]" />
                           ) : (
-                            <Search className="w-2.5 h-2.5 text-cyan-400" />
+                            <Search className="w-2.5 h-2.5 text-[#A6B7D4]" />
                           )}
                           <span className="max-w-[200px] truncate">{src.title}</span>
                           <ExternalLink className="w-2 h-2 shrink-0 opacity-70" />
@@ -945,10 +945,10 @@ ${aiInsight.limitationsAndUncertainty}
 
                 {/* Search Queries Triggered */}
                 {msg.searchQueries && msg.searchQueries.length > 0 && (
-                  <div className="mt-1.5 text-[8px] text-slate-500 flex flex-wrap items-center gap-1">
+                  <div className="mt-1.5 text-[8px] text-[#838FA3] flex flex-wrap items-center gap-1">
                     <span>Queries:</span>
                     {msg.searchQueries.map((q, qIdx) => (
-                      <span key={qIdx} className="bg-black/40 px-1 py-0.5 rounded border border-slate-800">
+                      <span key={qIdx} className="bg-[#232A3D] px-1 py-0.5 rounded border border-[#2D354A]">
                         "{q}"
                       </span>
                     ))}
@@ -958,7 +958,7 @@ ${aiInsight.limitationsAndUncertainty}
             ))}
 
             {isAsking && (
-              <div className="p-3 bg-[#050b14] border border-[#16243d] rounded-lg text-xs font-mono text-cyan-400 flex items-center gap-2">
+              <div className="p-3 bg-[#1D2436] border border-[#48516A] rounded-lg text-xs font-mono text-[#A6B7D4] flex items-center gap-2">
                 <RotateCw className="w-3.5 h-3.5 animate-spin" />
                 <span>
                   Querying {chatModel} with {chatGrounding !== 'none' ? `${chatGrounding} grounding & ` : ''}
@@ -975,7 +975,7 @@ ${aiInsight.limitationsAndUncertainty}
               e.preventDefault();
               handleSendChat();
             }}
-            className="pt-3 border-t border-[#1b2b48] flex items-center gap-2"
+            className="pt-3 border-t border-[#48516A] flex items-center gap-2"
           >
             <input
               type="text"
@@ -983,12 +983,12 @@ ${aiInsight.limitationsAndUncertainty}
               onChange={(e) => setUserQuery(e.target.value)}
               placeholder={`Ask ${PERSONAS.find(p => p.id === chatPersona)?.expert} about ${currentLocation.name}...`}
               disabled={isAsking}
-              className="flex-1 bg-[#050b14] border border-[#1b2b48] rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="flex-1 bg-[#1D2436] border border-[#48516A] rounded-lg px-3 py-2 text-xs font-mono text-[#F0EBDD] placeholder-[#838FA3] focus:outline-none focus:border-[#A6B7D4]"
             />
             <button
               type="submit"
               disabled={isAsking || !userQuery.trim()}
-              className="p-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              className="p-2 bg-[#A6B7D4] hover:bg-[#b8c7e0] text-[#171B2B] rounded-lg transition-colors cursor-pointer disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
             </button>
@@ -996,20 +996,20 @@ ${aiInsight.limitationsAndUncertainty}
         </div>
 
         {/* Right Side: Dual-Mode Panel - Scientific Synthesis Dossier OR Live Atmospheric News (7 Columns) */}
-        <div className="lg:col-span-7 bg-[#08101d] border border-[#1b2b48] rounded-xl p-5 shadow-xl flex flex-col justify-between space-y-4 min-h-[750px]">
+        <div className="lg:col-span-7 bg-[#353D55] border border-[#48516A] rounded-xl p-5 shadow-xl flex flex-col justify-between space-y-4 min-h-[750px]">
           <div className="space-y-4">
             {/* Tab Navigation Header */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1b2b48] pb-3">
-              <div className="flex items-center gap-1.5 p-1 bg-[#050b14] border border-[#1b2b48] rounded-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#48516A] pb-3">
+              <div className="flex items-center gap-1.5 p-1 bg-[#1D2436] border border-[#48516A] rounded-lg">
                 <button
                   onClick={() => setRightPanelTab('dossier')}
                   className={`px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     rightPanelTab === 'dossier'
-                      ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-700/60 shadow-sm shadow-cyan-500/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-[#A6B7D4] text-[#171B2B] shadow-sm'
+                      : 'text-[#B5BDCC] hover:text-[#F0EBDD]'
                   }`}
                 >
-                  <Award className="w-3.5 h-3.5 text-cyan-400" />
+                  <Award className="w-3.5 h-3.5" />
                   <span>Scientific Dossier</span>
                 </button>
                 <button
@@ -1021,13 +1021,13 @@ ${aiInsight.limitationsAndUncertainty}
                   }}
                   className={`px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     rightPanelTab === 'news'
-                      ? 'bg-purple-950/80 text-purple-200 border border-purple-700/60 shadow-sm shadow-purple-500/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-[#D28B71] text-[#171B2B] shadow-sm'
+                      : 'text-[#B5BDCC] hover:text-[#F0EBDD]'
                   }`}
                 >
-                  <Newspaper className="w-3.5 h-3.5 text-purple-400" />
+                  <Newspaper className="w-3.5 h-3.5" />
                   <span>Live News & NASA Publications</span>
-                  <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-300 border border-emerald-700/60 rounded text-[9px] font-mono tracking-tighter flex items-center gap-0.5">
+                  <span className="px-1.5 py-0.2 bg-[#1D2436] text-[#35C98B] border border-[#35C98B]/50 rounded text-[9px] font-mono tracking-tighter flex items-center gap-0.5">
                     <Search className="w-2 h-2" /> Live Grounded
                   </span>
                 </button>
@@ -1038,9 +1038,9 @@ ${aiInsight.limitationsAndUncertainty}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopyReport}
-                      className="px-3 py-1.5 bg-[#0e182b] hover:bg-[#152440] text-cyan-300 border border-cyan-500/40 rounded text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 bg-[#232A3D] hover:bg-[#2B3349] text-[#A6B7D4] border border-[#48516A] rounded text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? <Check className="w-3.5 h-3.5 text-[#35C98B]" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? 'Copied' : 'Copy Dossier'}</span>
                     </button>
                   </div>
@@ -1048,16 +1048,16 @@ ${aiInsight.limitationsAndUncertainty}
               ) : (
                 <div className="flex items-center gap-2">
                   {lastNewsFetchedAt && (
-                    <span className="text-[10px] font-mono text-slate-500 hidden sm:inline">
+                    <span className="text-[10px] font-mono text-[#838FA3] hidden sm:inline">
                       Updated: {lastNewsFetchedAt}
                     </span>
                   )}
                   <button
                     onClick={() => fetchAtmosphericNews(newsTopic, newsSearchQuery)}
                     disabled={loadingNews}
-                    className="px-3 py-1.5 bg-[#0e182b] hover:bg-[#152440] text-purple-300 border border-purple-500/40 rounded text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1.5 bg-[#232A3D] hover:bg-[#2B3349] text-[#D28B71] border border-[#48516A] rounded text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${loadingNews ? 'animate-spin text-cyan-400' : ''}`} />
+                    <RefreshCw className={`w-3.5 h-3.5 ${loadingNews ? 'animate-spin text-[#A6B7D4]' : ''}`} />
                     <span>{loadingNews ? 'Searching Web...' : 'Refresh Feed'}</span>
                   </button>
                 </div>
@@ -1067,75 +1067,75 @@ ${aiInsight.limitationsAndUncertainty}
             {/* TAB 1: Scientific Dossier View */}
             {rightPanelTab === 'dossier' && (
               <div>
-                <p className="text-xs font-mono text-slate-400 mb-3">
+                <p className="text-xs font-mono text-[#B5BDCC] mb-3">
                   Peer-reviewed framework interpreting empirical regression and Mann-Kendall statistics for {currentLocation.name}.
                 </p>
 
                 {generatingAi ? (
-                  <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-400 font-mono text-xs">
-                    <RotateCw className="w-8 h-8 text-cyan-400 animate-spin" />
+                  <div className="py-24 flex flex-col items-center justify-center gap-3 text-[#B5BDCC] font-mono text-xs">
+                    <RotateCw className="w-8 h-8 text-[#A6B7D4] animate-spin" />
                     <span>Running Gemini Multi-Modal Earth Science Reasoning...</span>
                   </div>
                 ) : aiInsight ? (
                   <div className="space-y-4 text-xs font-mono max-h-[550px] overflow-y-auto pr-1 scrollbar-thin">
                     {/* Executive Summary */}
-                    <div className="p-3.5 bg-[#050b14] rounded-lg border border-cyan-500/30">
-                      <div className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1">
+                    <div className="p-3.5 bg-[#232A3D] rounded-lg border border-[#A6B7D4]/40">
+                      <div className="text-[11px] font-bold text-[#A6B7D4] uppercase tracking-wider mb-1">
                         01. Executive Scientific Summary
                       </div>
-                      <p className="text-slate-200 leading-relaxed font-sans text-sm">
+                      <p className="text-[#F0EBDD] leading-relaxed font-sans text-sm">
                         {aiInsight.scientificSummary}
                       </p>
                     </div>
 
                     {/* Key Metrics Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-3 bg-[#050b14] rounded-lg border border-[#16243d]">
-                        <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">What Changed & Magnitude</div>
-                        <div className="text-white leading-relaxed">{aiInsight.whatChanged}</div>
-                        <div className="text-cyan-300 font-bold mt-2">{aiInsight.howMuchChanged}</div>
+                      <div className="p-3 bg-[#232A3D] rounded-lg border border-[#48516A]">
+                        <div className="text-[10px] text-[#B5BDCC] uppercase font-semibold mb-1">What Changed & Magnitude</div>
+                        <div className="text-[#F0EBDD] leading-relaxed">{aiInsight.whatChanged}</div>
+                        <div className="text-[#A6B7D4] font-bold mt-2">{aiInsight.howMuchChanged}</div>
                       </div>
 
-                      <div className="p-3 bg-[#050b14] rounded-lg border border-[#16243d]">
-                        <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Statistical Significance</div>
-                        <div className="text-emerald-400 font-bold mb-1">
+                      <div className="p-3 bg-[#232A3D] rounded-lg border border-[#48516A]">
+                        <div className="text-[10px] text-[#B5BDCC] uppercase font-semibold mb-1">Statistical Significance</div>
+                        <div className="text-[#35C98B] font-bold mb-1">
                           {analysis && analysis.mannKendall.pValue < 0.05 ? 'Significant at α = 0.05' : 'Null Hypothesis Not Rejected'}
                         </div>
-                        <div className="text-slate-300 leading-relaxed">{aiInsight.statisticalSignificance}</div>
+                        <div className="text-[#B5BDCC] leading-relaxed">{aiInsight.statisticalSignificance}</div>
                       </div>
                     </div>
 
                     {/* Atmospheric Mechanism & PBL Physics */}
-                    <div className="p-3 bg-[#050b14] rounded-lg border border-purple-500/30">
-                      <div className="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">
+                    <div className="p-3 bg-[#232A3D] rounded-lg border border-[#D28B71]/40">
+                      <div className="text-[10px] font-bold text-[#D28B71] uppercase tracking-wider mb-1">
                         02. Atmospheric Physics & Environmental Meaning
                       </div>
-                      <p className="text-slate-300 leading-relaxed">
+                      <p className="text-[#B5BDCC] leading-relaxed">
                         {aiInsight.environmentalMeaning}
                       </p>
                     </div>
 
                     {/* Limitations & Uncertainty */}
-                    <div className="p-3 bg-[#050b14] rounded-lg border border-amber-500/30">
-                      <div className="text-[10px] font-bold text-amber-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                    <div className="p-3 bg-[#232A3D] rounded-lg border border-[#F0B44D]/40">
+                      <div className="text-[10px] font-bold text-[#F0B44D] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#F0B44D]" />
                         03. Limitations, Autocorrelation & Satellite Uncertainty
                       </div>
-                      <p className="text-slate-400 leading-relaxed">
+                      <p className="text-[#B5BDCC] leading-relaxed">
                         {aiInsight.limitationsAndUncertainty}
                       </p>
                     </div>
 
                     {/* Key Takeaways */}
                     {aiInsight.keyTakeawayBullets && aiInsight.keyTakeawayBullets.length > 0 && (
-                      <div className="space-y-1.5 pt-2 border-t border-[#1b2b48]">
-                        <div className="text-[11px] font-bold text-white uppercase tracking-wider">
+                      <div className="space-y-1.5 pt-2 border-t border-[#48516A]">
+                        <div className="text-[11px] font-bold text-[#F0EBDD] uppercase tracking-wider">
                           Core Empirical Findings:
                         </div>
                         <ul className="space-y-1">
                           {aiInsight.keyTakeawayBullets.map((bullet, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-slate-300">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                            <li key={idx} className="flex items-start gap-2 text-[#B5BDCC]">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#35C98B] shrink-0 mt-0.5" />
                               <span>{bullet}</span>
                             </li>
                           ))}
@@ -1144,10 +1144,10 @@ ${aiInsight.limitationsAndUncertainty}
                     )}
                   </div>
                 ) : (
-                  <div className="py-24 flex flex-col items-center justify-center text-center p-6 text-slate-500 font-mono text-xs space-y-3">
-                    <BrainCircuit className="w-12 h-12 text-slate-700" />
+                  <div className="py-24 flex flex-col items-center justify-center text-center p-6 text-[#838FA3] font-mono text-xs space-y-3">
+                    <BrainCircuit className="w-12 h-12 text-[#48516A]" />
                     <div className="max-w-md">
-                      Click <strong className="text-cyan-400">Generate AI Synthesis</strong> above to run full Gemini multi-modal reasoning on empirical NASA observations and calculated Mann-Kendall statistics.
+                      Click <strong className="text-[#A6B7D4]">Generate AI Synthesis</strong> above to run full Gemini multi-modal reasoning on empirical NASA observations and calculated Mann-Kendall statistics.
                     </div>
                   </div>
                 )}
@@ -1160,7 +1160,7 @@ ${aiInsight.limitationsAndUncertainty}
                 {/* Topic Pills Filter & Custom Search Bar */}
                 <div className="space-y-2.5">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mr-1">
+                    <span className="text-[10px] font-mono text-[#B5BDCC] uppercase tracking-wider mr-1">
                       Filter Topic:
                     </span>
                     {[
@@ -1179,8 +1179,8 @@ ${aiInsight.limitationsAndUncertainty}
                           }}
                           className={`px-2.5 py-1 rounded text-[11px] font-mono transition-all border cursor-pointer ${
                             isActive
-                              ? 'bg-purple-950/80 border-purple-500/60 text-purple-200 font-bold shadow-sm shadow-purple-500/10'
-                              : 'bg-[#050b14] border-[#1b2b48] text-slate-400 hover:text-slate-200 hover:bg-[#0c1626]'
+                              ? 'bg-[#D28B71]/20 border-[#D28B71] text-[#D28B71] font-bold shadow-sm'
+                              : 'bg-[#1D2436] border-[#48516A] text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#232A3D]'
                           }`}
                         >
                           {t.label}
@@ -1198,19 +1198,19 @@ ${aiInsight.limitationsAndUncertainty}
                     className="flex items-center gap-2"
                   >
                     <div className="relative flex-1">
-                      <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Search className="w-3.5 h-3.5 text-[#838FA3] absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
                         value={newsSearchQuery}
                         onChange={(e) => setNewsSearchQuery(e.target.value)}
                         placeholder="Search live web for NASA atmospheric missions (PACE, TEMPO, MERRA-2, smoke plumes, inversion research)..."
-                        className="w-full bg-[#050b14] border border-[#1b2b48] focus:border-purple-500 rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none"
+                        className="w-full bg-[#1D2436] border border-[#48516A] focus:border-[#D28B71] rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-[#F0EBDD] placeholder-[#838FA3] focus:outline-none"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loadingNews}
-                      className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-mono font-bold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 shrink-0"
+                      className="px-3.5 py-2 bg-[#D28B71] hover:bg-[#dd9b83] text-[#171B2B] font-mono font-bold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 shrink-0"
                     >
                       <Search className="w-3.5 h-3.5" />
                       <span>Search Live Web</span>
@@ -1223,7 +1223,7 @@ ${aiInsight.limitationsAndUncertainty}
                           setSubmittedQuery('');
                           fetchAtmosphericNews(newsTopic, '');
                         }}
-                        className="px-2.5 py-2 bg-[#050b14] border border-[#1b2b48] hover:border-red-500/50 text-slate-400 hover:text-red-300 rounded-lg text-xs font-mono transition-colors cursor-pointer"
+                        className="px-2.5 py-2 bg-[#1D2436] border border-[#48516A] hover:border-[#F16C72]/50 text-[#B5BDCC] hover:text-[#F16C72] rounded-lg text-xs font-mono transition-colors cursor-pointer"
                         title="Clear custom search"
                       >
                         Reset
@@ -1234,27 +1234,27 @@ ${aiInsight.limitationsAndUncertainty}
 
                 {/* News Retrieval States */}
                 {loadingNews ? (
-                  <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-400 font-mono text-xs">
-                    <RotateCw className="w-8 h-8 text-purple-400 animate-spin" />
+                  <div className="py-24 flex flex-col items-center justify-center gap-3 text-[#B5BDCC] font-mono text-xs">
+                    <RotateCw className="w-8 h-8 text-[#D28B71] animate-spin" />
                     <div className="text-center space-y-1">
-                      <div className="text-slate-200 font-semibold">
+                      <div className="text-[#F0EBDD] font-semibold">
                         Querying Google Search Grounding via Gemini 4 Hydrogen...
                       </div>
-                      <div className="text-slate-500 text-[11px]">
+                      <div className="text-[#838FA3] text-[11px]">
                         Scanning NASA Earth Observatory, AGU journals, PACE & TEMPO satellite advisories
                       </div>
                     </div>
                   </div>
                 ) : newsError ? (
-                  <div className="p-4 bg-red-950/30 border border-red-700/50 rounded-lg text-xs font-mono text-red-300 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-red-200">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <div className="p-4 bg-[#F16C72]/15 border border-[#F16C72]/50 rounded-lg text-xs font-mono text-[#F16C72] space-y-2">
+                    <div className="flex items-center gap-2 font-bold">
+                      <AlertTriangle className="w-4 h-4 text-[#F16C72]" />
                       Failed to Retrieve Live News
                     </div>
                     <p>{newsError}</p>
                     <button
                       onClick={() => fetchAtmosphericNews(newsTopic, newsSearchQuery)}
-                      className="px-3 py-1.5 bg-red-900/40 hover:bg-red-800/60 border border-red-600/50 rounded text-red-100 font-bold cursor-pointer transition-colors"
+                      className="px-3 py-1.5 bg-[#F16C72] text-[#171B2B] rounded font-bold cursor-pointer transition-colors"
                     >
                       Retry Google Search Grounding
                     </button>
@@ -1263,28 +1263,28 @@ ${aiInsight.limitationsAndUncertainty}
                   <div className="space-y-4 max-h-[550px] overflow-y-auto pr-1 scrollbar-thin text-xs font-mono">
                     
                     {/* Breaking Real-Time Update Callout */}
-                    <div className="p-3.5 bg-gradient-to-r from-purple-950/40 via-[#0b162c] to-cyan-950/40 rounded-lg border border-purple-500/40 shadow-lg">
-                      <div className="flex items-center gap-2 text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                        <Newspaper className="w-3.5 h-3.5 text-purple-400" />
+                    <div className="p-3.5 bg-[#232A3D] rounded-lg border border-[#D28B71]/50 shadow-md">
+                      <div className="flex items-center gap-2 text-[11px] font-bold text-[#D28B71] uppercase tracking-wider mb-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#35C98B] animate-ping"></span>
+                        <Newspaper className="w-3.5 h-3.5 text-[#D28B71]" />
                         <span>Breaking Atmospheric Intelligence Briefing</span>
                       </div>
-                      <p className="text-slate-100 font-sans text-sm leading-relaxed">
+                      <p className="text-[#F0EBDD] font-sans text-sm leading-relaxed">
                         {atmosphericNews.breakingUpdate}
                       </p>
                     </div>
 
                     {/* Key Themes Synthesized */}
                     {atmosphericNews.keyThemes && atmosphericNews.keyThemes.length > 0 && (
-                      <div className="p-3 bg-[#050b14] rounded-lg border border-[#16243d] space-y-1.5">
-                        <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <TrendingUp className="w-3 h-3 text-cyan-400" />
+                      <div className="p-3 bg-[#232A3D] rounded-lg border border-[#48516A] space-y-1.5">
+                        <div className="text-[10px] font-bold text-[#A6B7D4] uppercase tracking-wider flex items-center gap-1.5">
+                          <TrendingUp className="w-3 h-3 text-[#A6B7D4]" />
                           <span>Key Thematic Trends & Observations:</span>
                         </div>
                         <ul className="space-y-1">
                           {atmosphericNews.keyThemes.map((theme, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-slate-300 font-sans text-xs">
-                              <span className="text-cyan-400 font-mono font-bold">›</span>
+                            <li key={idx} className="flex items-start gap-2 text-[#B5BDCC] font-sans text-xs">
+                              <span className="text-[#A6B7D4] font-mono font-bold">›</span>
                               <span>{theme}</span>
                             </li>
                           ))}
@@ -1294,12 +1294,12 @@ ${aiInsight.limitationsAndUncertainty}
 
                     {/* Recent Articles & NASA Publications Grid */}
                     <div className="space-y-3">
-                      <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                      <div className="text-[11px] font-bold text-[#F0EBDD] uppercase tracking-wider flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
-                          <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                          <BookOpen className="w-3.5 h-3.5 text-[#D28B71]" />
                           Verified Articles & Scientific Publications ({atmosphericNews.articles.length})
                         </span>
-                        <span className="text-[10px] text-slate-500 font-normal">
+                        <span className="text-[10px] text-[#838FA3] font-normal">
                           Live Grounded
                         </span>
                       </div>
@@ -1308,36 +1308,36 @@ ${aiInsight.limitationsAndUncertainty}
                         {atmosphericNews.articles.map((art, idx) => (
                           <div
                             key={idx}
-                            className="p-3.5 bg-[#050b14] border border-[#16243d] hover:border-purple-500/40 rounded-lg transition-all space-y-2 group"
+                            className="p-3.5 bg-[#232A3D] border border-[#48516A] hover:border-[#D28B71]/50 rounded-lg transition-all space-y-2 group"
                           >
                             {/* Meta Header */}
                             <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-700/60 font-semibold">
+                                <span className="px-2 py-0.5 rounded bg-[#1D2436] text-[#D28B71] border border-[#D28B71]/40 font-semibold">
                                   {art.category || 'NASA Research'}
                                 </span>
-                                <span className="text-slate-400 font-semibold flex items-center gap-1">
-                                  <Globe className="w-2.5 h-2.5 text-cyan-400" />
+                                <span className="text-[#B5BDCC] font-semibold flex items-center gap-1">
+                                  <Globe className="w-2.5 h-2.5 text-[#A6B7D4]" />
                                   {art.source}
                                 </span>
                               </div>
-                              <span className="text-slate-500 font-mono">{art.date}</span>
+                              <span className="text-[#838FA3] font-mono">{art.date}</span>
                             </div>
 
                             {/* Headline */}
-                            <h4 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors leading-snug">
+                            <h4 className="text-sm font-bold text-[#F0EBDD] group-hover:text-[#D28B71] transition-colors leading-snug">
                               {art.title}
                             </h4>
 
                             {/* Scientific Breakdown */}
-                            <p className="text-slate-300 text-xs font-sans leading-relaxed">
+                            <p className="text-[#B5BDCC] text-xs font-sans leading-relaxed">
                               {art.summary}
                             </p>
 
                             {/* Scientific Relevance Callout */}
                             {art.relevance && (
-                              <div className="p-2 rounded bg-cyan-950/30 border border-cyan-800/30 text-[11px] text-cyan-200 font-mono">
-                                <strong className="text-cyan-400">Impact & Relevance:</strong> {art.relevance}
+                              <div className="p-2 rounded bg-[#1D2436] border border-[#48516A] text-[11px] text-[#B5BDCC] font-mono">
+                                <strong className="text-[#A6B7D4]">Impact & Relevance:</strong> {art.relevance}
                               </div>
                             )}
                           </div>
@@ -1347,9 +1347,9 @@ ${aiInsight.limitationsAndUncertainty}
 
                     {/* Google Search Grounding Sources */}
                     {atmosphericNews.sources && atmosphericNews.sources.length > 0 && (
-                      <div className="p-3 bg-[#050b14] rounded-lg border border-[#16243d] space-y-2">
-                        <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                          <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+                      <div className="p-3 bg-[#232A3D] rounded-lg border border-[#48516A] space-y-2">
+                        <div className="text-[10px] font-bold text-[#F0EBDD] uppercase tracking-wider flex items-center gap-1.5">
+                          <ExternalLink className="w-3.5 h-3.5 text-[#35C98B]" />
                           <span>Google Search Grounding Web Sources ({atmosphericNews.sources.length}):</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -1359,11 +1359,11 @@ ${aiInsight.limitationsAndUncertainty}
                               href={src.uri}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-2.5 py-1.5 rounded bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-700/50 hover:border-cyan-400 text-cyan-200 text-[10px] font-mono flex items-center gap-1.5 transition-all group"
+                              className="px-2.5 py-1.5 rounded bg-[#1D2436] hover:bg-[#353D55] border border-[#48516A] hover:border-[#A6B7D4] text-[#A6B7D4] text-[10px] font-mono flex items-center gap-1.5 transition-all group"
                             >
-                              <Search className="w-2.5 h-2.5 text-cyan-400" />
+                              <Search className="w-2.5 h-2.5 text-[#A6B7D4]" />
                               <span className="max-w-[240px] truncate">{src.title}</span>
-                              <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 shrink-0 text-cyan-400" />
+                              <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 shrink-0 text-[#A6B7D4]" />
                             </a>
                           ))}
                         </div>
@@ -1372,10 +1372,10 @@ ${aiInsight.limitationsAndUncertainty}
 
                     {/* Web Search Queries Executed */}
                     {atmosphericNews.searchQueries && atmosphericNews.searchQueries.length > 0 && (
-                      <div className="text-[9px] text-slate-500 flex flex-wrap items-center gap-1.5 pt-1">
+                      <div className="text-[9px] text-[#838FA3] flex flex-wrap items-center gap-1.5 pt-1">
                         <span className="uppercase tracking-wider">Search Queries Executed:</span>
                         {atmosphericNews.searchQueries.map((q, qIdx) => (
-                          <span key={qIdx} className="bg-black/50 px-2 py-0.5 rounded border border-slate-800 text-slate-400">
+                          <span key={qIdx} className="bg-[#1D2436] px-2 py-0.5 rounded border border-[#2D354A] text-[#B5BDCC]">
                             "{q}"
                           </span>
                         ))}
@@ -1383,10 +1383,10 @@ ${aiInsight.limitationsAndUncertainty}
                     )}
                   </div>
                 ) : (
-                  <div className="py-24 flex flex-col items-center justify-center text-center p-6 text-slate-500 font-mono text-xs space-y-3">
-                    <Newspaper className="w-12 h-12 text-slate-700" />
+                  <div className="py-24 flex flex-col items-center justify-center text-center p-6 text-[#838FA3] font-mono text-xs space-y-3">
+                    <Newspaper className="w-12 h-12 text-[#48516A]" />
                     <div className="max-w-md">
-                      Click <strong className="text-purple-400">Search Live Web</strong> or select a topic to retrieve real-time atmospheric news and recent NASA publications grounded via Google Search.
+                      Click <strong className="text-[#D28B71]">Search Live Web</strong> or select a topic to retrieve real-time atmospheric news and recent NASA publications grounded via Google Search.
                     </div>
                   </div>
                 )}
@@ -1395,7 +1395,7 @@ ${aiInsight.limitationsAndUncertainty}
           </div>
 
           {/* Model Provenance Footer */}
-          <div className="pt-3 border-t border-[#1b2b48] flex flex-wrap items-center justify-between text-[10px] font-mono text-slate-500 gap-2">
+          <div className="pt-3 border-t border-[#48516A] flex flex-wrap items-center justify-between text-[10px] font-mono text-[#838FA3] gap-2">
             <span>
               {rightPanelTab === 'dossier' 
                 ? 'Grounding: NASA POWER MERRA-2 API' 

@@ -3,19 +3,58 @@
 @layer base {
   :root {
     --font-space: 'Space Grotesk', sans-serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+    /* Scientific Editorial Central Token System */
+    --bg-main: #171B2B;
+    --bg-secondary: #232A3D;
+    --bg-panel: #353D55;
+    --bg-elevated: #2B3349;
+    --bg-inset: #1D2436;
+
+    --accent-primary: #A6B7D4;
+    --accent-secondary: #D28B71;
+    --accent-muted: #8296B5;
+
+    --text-primary: #F0EBDD;
+    --text-secondary: #B5BDCC;
+    --text-muted: #838FA3;
+
+    --border-standard: #48516A;
+    --border-subtle: #2D354A;
+    --border-strong: #64718A;
+
+    --color-success: #35C98B;
+    --color-warning: #F0B44D;
+    --color-critical: #F16C72;
+    --color-info: #A6B7D4;
+
+    /* Interactive & Surface Semantic Tokens */
+    --state-hover-bg: #2B3349;
+    --state-hover-accent: #B8C6DF;
+    --state-focus-ring: #A6B7D4;
+    --state-disabled-bg: #1D2436;
+    --state-disabled-text: #838FA3;
+    --bg-input: #1D2436;
+    --bg-chart: #232A3D;
+    --bg-map-control: #232A3D;
+    --bg-tooltip: #232A3D;
+    --bg-popover: #2B3349;
   }
 
   body {
-    background-color: #020817;
-    color: #e2e8f0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
     font-family: var(--font-sans);
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, .font-space {
     font-family: var(--font-space);
+    letter-spacing: -0.015em;
   }
 
   code, pre, .font-mono {
@@ -23,109 +62,95 @@
   }
 }
 
-/* Custom Futuristic Scrollbar */
+/* Scientific Editorial Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #020817;
+  background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
-  background: #111d33;
-  border-radius: 9999px;
-  border: 1px solid #1a2a47;
+  background: var(--border-standard);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00E5FF;
+  background: var(--accent-primary);
 }
 
-/* Glassmorphism & Glow Utilities */
-.glass-panel {
-  background: rgba(6, 20, 38, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 229, 255, 0.15);
+/* Central Panel & Surface Utilities */
+.panel-scientific {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-standard);
 }
 
-.glass-panel-hover {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.glass-panel-hover:hover {
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
-  transform: translateY(-2px);
+.panel-secondary {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
-.glass-panel-purple {
-  background: rgba(15, 10, 35, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
-}
-.glass-panel-purple:hover {
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+.panel-inset {
+  background-color: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
 }
 
-/* Cyber Glow Text & Borders */
-.text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-}
-.text-glow-purple {
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+.panel-elevated {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
 }
 
-.border-glow-cyan {
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+.subtle-border {
+  border-color: var(--border-subtle);
 }
 
-.bg-space-grid {
-  background-image: linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+.standard-border {
+  border-color: var(--border-standard);
 }
 
-/* Leaflet dark theme tweaks */
+/* Subtle Engineering Grid Background */
+.bg-scientific-grid {
+  background-image: linear-gradient(to right, rgba(166, 183, 212, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(166, 183, 212, 0.03) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* Leaflet Dark Editorial Map Tweaks */
 .leaflet-container {
-  background: #020817 !important;
+  background: var(--bg-main) !important;
   font-family: var(--font-sans) !important;
 }
 
 .leaflet-popup-content-wrapper {
-  background: #061426 !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(0, 229, 255, 0.3) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(0,229,255,0.2) !important;
+  background: var(--bg-tooltip) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-standard) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+  padding: 4px !important;
 }
 
 .leaflet-popup-tip {
-  background: #061426 !important;
-  border: 1px solid rgba(0, 229, 255, 0.3) !important;
+  background: var(--bg-tooltip) !important;
+  border: 1px solid var(--border-standard) !important;
 }
 
-/* Leaflet attribution & tile-pane futuristic glass panel overlay styling */
 .leaflet-tile-pane {
-  filter: brightness(0.95) contrast(1.05);
+  filter: brightness(0.97) contrast(1.03);
 }
 
 .leaflet-control-attribution {
-  background: rgba(2, 8, 23, 0.75) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #64748b !important;
-  border: 1px solid rgba(0, 229, 255, 0.2) !important;
-  border-radius: 6px !important;
+  background: var(--bg-map-control) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-standard) !important;
+  border-radius: 4px !important;
   font-family: var(--font-mono) !important;
   font-size: 9px !important;
   padding: 2px 6px !important;
   margin: 6px !important;
-  z-index: 1000 !important;
 }
 
 .leaflet-control-attribution a {
-  color: #00E5FF !important;
+  color: var(--accent-primary) !important;
   text-decoration: none !important;
 }
 
@@ -193,4 +218,3 @@
     break-inside: avoid;
   }
 }
-
