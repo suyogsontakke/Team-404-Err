@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-space: 'Space Grotesk', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background-color: #020817;
+    color: #e2e8f0;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-space {
+    font-family: var(--font-space);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom Futuristic Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020817;
+}
+::-webkit-scrollbar-thumb {
+  background: #111d33;
+  border-radius: 9999px;
+  border: 1px solid #1a2a47;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00E5FF;
+}
+
+/* Glassmorphism & Glow Utilities */
+.glass-panel {
+  background: rgba(6, 20, 38, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+}
+
+.glass-panel-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel-hover:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.glass-panel-purple {
+  background: rgba(15, 10, 35, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.glass-panel-purple:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+}
+
+/* Cyber Glow Text & Borders */
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+.text-glow-purple {
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.border-glow-cyan {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+.bg-space-grid {
+  background-image: linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Leaflet dark theme tweaks */
+.leaflet-container {
+  background: #020817 !important;
+  font-family: var(--font-sans) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #061426 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(0, 229, 255, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(0,229,255,0.2) !important;
+}
+
+.leaflet-popup-tip {
+  background: #061426 !important;
+  border: 1px solid rgba(0, 229, 255, 0.3) !important;
+}
+
+/* Leaflet attribution & tile-pane futuristic glass panel overlay styling */
+.leaflet-tile-pane {
+  filter: brightness(0.95) contrast(1.05);
+}
+
+.leaflet-control-attribution {
+  background: rgba(2, 8, 23, 0.75) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #64748b !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  margin: 6px !important;
+  z-index: 1000 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #00E5FF !important;
+  text-decoration: none !important;
+}
+
+.leaflet-control-attribution a:hover {
+  text-decoration: underline !important;
+}
+
+/* Print-to-PDF Document Global Styling */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm 14mm 14mm;
+  }
+
+  html, body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #root, .h-screen, main, .overflow-hidden, .overflow-y-auto {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    position: static !important;
+    background: #FFFFFF !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  aside, header, nav, .no-print, button, input, select {
+    display: none !important;
+  }
+
+  .print-document-root {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .print-keep-together {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
