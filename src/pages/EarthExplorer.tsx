@@ -95,7 +95,9 @@ export default function EarthExplorer() {
   const [isPlayingTimeline, setIsPlayingTimeline] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number>(2024);
   const [telemetryData, setTelemetryData] = useState<LocationDataResult | null>(null);
-  const [isLayersPanelOpen, setIsLayersPanelOpen] = useState(true);
+  const [isLayersPanelOpen, setIsLayersPanelOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
 
   // Fetch telemetry
   useEffect(() => {
@@ -153,16 +155,16 @@ export default function EarthExplorer() {
   ];
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#171B2B] text-[#F0EBDD] font-sans overflow-hidden">
+    <div className="h-[calc(100vh-5rem)] flex flex-col bg-[#171B2B] text-[#F0EBDD] font-sans overflow-hidden rounded-xl border border-[#48516A]">
       
       {/* Top Toolbar: Search, Projection Toggles & Coordinates */}
-      <div className="h-12 border-b border-[#48516A] bg-[#232A3D] px-4 flex items-center justify-between text-xs gap-3 shrink-0 z-20">
+      <div className="min-h-12 border-b border-[#48516A] bg-[#232A3D] px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between text-xs gap-2.5 shrink-0 z-20">
         
         {/* Left: View Mode / Projection Toggles */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#1D2436] border border-[#48516A] rounded-lg font-mono">
+        <div className="flex items-center gap-1 p-1 bg-[#1D2436] border border-[#48516A] rounded-lg font-mono">
           <button
             onClick={() => setProjection('flat')}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1 rounded text-[11px] sm:text-xs font-medium transition-colors cursor-pointer ${
               projection === 'flat' 
                 ? 'bg-[#A6B7D4] text-[#171B2B] font-bold' 
                 : 'text-[#B5BDCC] hover:text-[#F0EBDD]'
@@ -172,7 +174,7 @@ export default function EarthExplorer() {
           </button>
           <button
             onClick={() => setProjection('satellite')}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1 rounded text-[11px] sm:text-xs font-medium transition-colors cursor-pointer ${
               projection === 'satellite' 
                 ? 'bg-[#A6B7D4] text-[#171B2B] font-bold' 
                 : 'text-[#B5BDCC] hover:text-[#F0EBDD]'
@@ -182,7 +184,7 @@ export default function EarthExplorer() {
           </button>
           <button
             onClick={() => setProjection('globe')}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1 rounded text-[11px] sm:text-xs font-medium transition-colors cursor-pointer ${
               projection === 'globe' 
                 ? 'bg-[#A6B7D4] text-[#171B2B] font-bold' 
                 : 'text-[#B5BDCC] hover:text-[#F0EBDD]'
@@ -193,14 +195,14 @@ export default function EarthExplorer() {
         </div>
 
         {/* Center: Search Coordinates or Station */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-md relative">
+        <form onSubmit={handleSearch} className="flex-1 min-w-[200px] max-w-md relative order-3 sm:order-2 w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#838FA3]" />
           <input 
             type="text"
             placeholder="Search station or coordinates (e.g. Nagpur, 21.14, 79.08)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#1D2436] border border-[#48516A] rounded-lg pl-9 pr-20 py-1.5 text-xs text-[#F0EBDD] placeholder-[#838FA3] focus:outline-none focus:border-[#A6B7D4] font-mono"
+            className="w-full bg-[#1D2436] border border-[#48516A] rounded-lg pl-9 pr-14 py-1.5 text-xs text-[#F0EBDD] placeholder-[#838FA3] focus:outline-none focus:border-[#A6B7D4] font-mono"
           />
           <button
             type="submit"
@@ -211,10 +213,10 @@ export default function EarthExplorer() {
         </form>
 
         {/* Right: Active Location Indicator */}
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-[#B5BDCC] hidden sm:inline">{selectedLocation.name}</span>
-          <span className="text-[#838FA3] hidden sm:inline">·</span>
-          <span className="text-[#A6B7D4] font-medium">
+        <div className="flex items-center gap-2 font-mono text-xs order-2 sm:order-3">
+          <span className="text-[#B5BDCC] hidden md:inline">{selectedLocation.name}</span>
+          <span className="text-[#838FA3] hidden md:inline">·</span>
+          <span className="text-[#A6B7D4] font-medium text-[11px] sm:text-xs">
             {selectedLocation.lat.toFixed(2)}°N, {selectedLocation.lon.toFixed(2)}°E
           </span>
           <button
@@ -227,7 +229,7 @@ export default function EarthExplorer() {
             title="Toggle Environmental Layer Controls"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Layers</span>
+            <span className="hidden sm:inline">Layers</span>
           </button>
         </div>
 
@@ -236,20 +238,29 @@ export default function EarthExplorer() {
       {/* Main Canvas Viewport with Optional Collapsible Side Controls */}
       <div className="flex-1 relative overflow-hidden flex">
         
-        {/* Docked / Collapsible Left Control Deck */}
+        {/* Docked / Collapsible Left Control Deck (Overlay on mobile, docked on md+) */}
         {isLayersPanelOpen && (
           <aside 
             aria-label="Environmental layer controls and station selection"
-            className="w-72 bg-[#232A3D] border-r border-[#48516A] p-3 flex flex-col justify-between gap-3 shrink-0 z-20 overflow-y-auto"
+            className="absolute inset-y-0 left-0 z-30 md:relative w-72 max-w-[85vw] bg-[#232A3D] border-r border-[#48516A] p-3 flex flex-col justify-between gap-3 shrink-0 shadow-2xl md:shadow-none overflow-y-auto"
           >
             <div className="space-y-3">
               {/* Target Location Card */}
               <div className="bg-[#353D55] border border-[#48516A] rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono text-[#B5BDCC] uppercase font-semibold">Active Station</span>
-                  <span className="text-[9px] font-mono text-[#35C98B] bg-[#1D2436] px-1.5 py-0.2 rounded border border-[#48516A]">
-                    PROBE ONLINE
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-mono text-[#35C98B] bg-[#1D2436] px-1.5 py-0.2 rounded border border-[#48516A]">
+                      PROBE ONLINE
+                    </span>
+                    <button
+                      onClick={() => setIsLayersPanelOpen(false)}
+                      className="md:hidden p-1 text-[#B5BDCC] hover:text-[#F0EBDD] rounded bg-[#1D2436] border border-[#48516A]"
+                      aria-label="Close Layers Panel"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
                 <div className="font-bold text-sm text-[#F0EBDD] font-space truncate">{selectedLocation.name}</div>
                 <div className="text-[11px] font-mono text-[#B5BDCC]">
@@ -388,22 +399,22 @@ export default function EarthExplorer() {
       </div>
 
       {/* Bottom Timeline Playback Scrubber */}
-      <div className="h-11 bg-[#232A3D] border-t border-[#48516A] px-4 flex items-center justify-between z-20 text-xs shrink-0 font-mono">
-        <div className="flex items-center gap-3">
+      <div className="min-h-11 bg-[#232A3D] border-t border-[#48516A] px-3 sm:px-4 py-1.5 flex flex-wrap items-center justify-between gap-2 z-20 text-xs shrink-0 font-mono">
+        <div className="hidden sm:flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-[#F0EBDD]">
             <Compass className="w-3.5 h-3.5 text-[#A6B7D4]" />
             <span>{selectedLocation.lat.toFixed(4)}°N, {selectedLocation.lon.toFixed(4)}°E</span>
           </div>
-          <span className="text-[#838FA3] hidden sm:inline">|</span>
-          <span className="text-[#B5BDCC] hidden sm:inline">
+          <span className="text-[#838FA3] hidden md:inline">|</span>
+          <span className="text-[#B5BDCC] hidden md:inline">
             Elevation: <span className="text-[#F0EBDD]">{telemetryData?.elevationMeters || 310} m MSL</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-center">
           <button
             onClick={() => setIsPlayingTimeline(!isPlayingTimeline)}
-            className="p-1.5 rounded bg-[#1D2436] hover:bg-[#2B3349] text-[#A6B7D4] border border-[#48516A] transition-colors cursor-pointer"
+            className="p-1.5 rounded bg-[#1D2436] hover:bg-[#2B3349] text-[#A6B7D4] border border-[#48516A] transition-colors cursor-pointer shrink-0"
             title={isPlayingTimeline ? 'Pause Playback' : 'Play Timeline (2001–2025)'}
           >
             {isPlayingTimeline ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -415,7 +426,7 @@ export default function EarthExplorer() {
             max="2025" 
             value={selectedYear} 
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="w-32 sm:w-64 h-1 bg-[#48516A] rounded appearance-none cursor-pointer accent-[#A6B7D4]" 
+            className="flex-1 sm:w-56 md:w-64 h-1 bg-[#48516A] rounded appearance-none cursor-pointer accent-[#A6B7D4]" 
           />
           <span className="text-[#F0EBDD] font-bold">{selectedYear}</span>
           <span className="text-[#838FA3] text-[10px]">2025</span>

@@ -150,6 +150,11 @@ export default function GlobalDisasterWatch() {
         })
       });
 
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
+        throw new Error(`Endpoint returned ${res.status}`);
+      }
+
       const data = await res.json();
       if (data.success && data.insight) {
         setAiResponse(data.insight);
@@ -321,13 +326,13 @@ export default function GlobalDisasterWatch() {
             initial={{ opacity: 0, y: 12 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="lg:col-span-7 bg-[#232A3D] border border-[#48516A] rounded-2xl overflow-hidden shadow-xl flex flex-col h-[650px] relative"
+            className="lg:col-span-7 bg-[#232A3D] border border-[#48516A] rounded-2xl overflow-hidden shadow-xl flex flex-col h-[420px] sm:h-[540px] lg:h-[650px] relative"
           >
             
             {/* Map Top Bar */}
-            <div className="p-3 bg-[#353D55] border-b border-[#48516A] flex items-center justify-between gap-3 z-10">
+            <div className="p-3 bg-[#353D55] border-b border-[#48516A] flex flex-wrap items-center justify-between gap-2 z-10">
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-[#A6B7D4]" />
+                <Globe className="w-4 h-4 text-[#A6B7D4] shrink-0" />
                 <span className="text-xs font-mono font-bold text-[#F0EBDD] uppercase tracking-wider">
                   Interactive Geospatial Risk Explorer
                 </span>
@@ -433,7 +438,7 @@ export default function GlobalDisasterWatch() {
             initial={{ opacity: 0, x: 12 }} 
             animate={{ opacity: 1, x: 0 }} 
             transition={{ duration: 0.45, delay: 0.1, ease: "easeOut" }}
-            className="lg:col-span-5 bg-[#353D55] border border-[#48516A] rounded-2xl overflow-hidden shadow-xl flex flex-col h-[650px]"
+            className="lg:col-span-5 bg-[#353D55] border border-[#48516A] rounded-2xl overflow-hidden shadow-xl flex flex-col h-[560px] sm:h-[620px] lg:h-[650px]"
           >
             
             {/* Header: Country Flag, Name, Capital, Population */}

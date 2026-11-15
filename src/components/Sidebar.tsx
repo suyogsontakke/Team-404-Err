@@ -20,16 +20,22 @@ import {
   Flame,
   Radio,
   FileSpreadsheet,
-  Orbit
+  Orbit,
+  Users,
+  X
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
+export default function Sidebar({ isOpen, setIsOpen, isMobileOpen, onCloseMobile }: SidebarProps) {
+  const expanded = isOpen || Boolean(isMobileOpen);
+
   const links = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
     { name: '3D Observatory', path: '/observatory', icon: Orbit, badge: '3D' },
@@ -40,6 +46,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     { name: '72-Hour Blindspot', path: '/blindspot', icon: Radar, badge: '72H' },
     { name: 'AI Intelligence', path: '/ai-insights', icon: BrainCircuit, badge: 'AI' },
     { name: 'Reports', path: '/reports', icon: FileText },
+    { name: 'Members', path: '/members', icon: Users, badge: 'TEAM' },
     { name: 'Settings', path: '/about', icon: Settings },
   ];
 
@@ -54,33 +61,44 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   return (
     <aside 
       className={clsx(
-        "bg-[#171B2B] text-[#B5BDCC] flex flex-col transition-all duration-300 border-r border-[#48516A] shrink-0 select-none z-30 relative",
-        isOpen ? "w-64" : "w-16"
+        "h-full bg-[#171B2B] text-[#B5BDCC] flex flex-col transition-all duration-300 border-r border-[#48516A] shrink-0 select-none z-30 relative",
+        expanded ? "w-64" : "w-16"
       )}
     >
       {/* Brand Header */}
       <div className="flex items-center justify-between p-3.5 border-b border-[#48516A]">
-        <NavLink to="/" className="flex items-center gap-3 overflow-hidden group">
+        <NavLink to="/" onClick={() => onCloseMobile?.()} className="flex items-center gap-3 overflow-hidden group">
           <img 
             src="/assets/aistudio/image_eed5d808.png" 
             alt="EARTH TRACE Logo" 
             className="w-8 h-8 object-contain shrink-0" 
           />
-          {isOpen && (
+          {expanded && (
             <div className="flex flex-col min-w-0">
               <span className="font-extrabold text-sm tracking-wide text-[#F0EBDD] truncate font-space">EARTH TRACE</span>
               <span className="text-[10px] font-mono text-[#838FA3] tracking-wider truncate uppercase">Observation Platform</span>
             </div>
           )}
         </NavLink>
-        <button 
-          onClick={() => setIsOpen(!isOpen)} 
-          className="text-[#B5BDCC] hover:text-[#F0EBDD] p-1.5 rounded-lg hover:bg-[#232A3D] border border-transparent hover:border-[#48516A] transition-colors cursor-pointer"
-          title={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
-          aria-label={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
-        >
-          {isOpen ? <ChevronLeft className="w-4 h-4 text-[#B5BDCC]" /> : <ChevronRight className="w-4 h-4 text-[#B5BDCC]" />}
-        </button>
+        <div className="flex items-center gap-1">
+          {isMobileOpen && onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="lg:hidden text-[#B5BDCC] hover:text-[#F0EBDD] p-1.5 rounded-lg hover:bg-[#232A3D] border border-transparent hover:border-[#48516A] transition-colors cursor-pointer"
+              aria-label="Close mobile menu"
+            >
+              <X className="w-4 h-4 text-[#B5BDCC]" />
+            </button>
+          )}
+          <button 
+            onClick={() => setIsOpen(!isOpen)} 
+            className="hidden lg:inline-flex text-[#B5BDCC] hover:text-[#F0EBDD] p-1.5 rounded-lg hover:bg-[#232A3D] border border-transparent hover:border-[#48516A] transition-colors cursor-pointer"
+            title={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+            aria-label={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+          >
+            {isOpen ? <ChevronLeft className="w-4 h-4 text-[#B5BDCC]" /> : <ChevronRight className="w-4 h-4 text-[#B5BDCC]" />}
+          </button>
+        </div>
       </div>
 
       {/* Navigation Links */}
@@ -89,7 +107,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           <NavLink
             key={link.name}
             to={link.path}
-            title={!isOpen ? link.name : undefined}
+            onClick={() => onCloseMobile?.()}
+            title={!expanded ? link.name : undefined}
             className={({ isActive }) =>
               clsx(
                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-xs font-medium group relative",
@@ -100,15 +119,15 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             }
           >
             <link.icon className="w-4 h-4 shrink-0 transition-colors text-[#B5BDCC] group-hover:text-[#A6B7D4]" />
-            {isOpen && (
+            {expanded && (
               <span className="truncate flex-1">{link.name}</span>
             )}
-            {isOpen && link.badge && (
+            {expanded && link.badge && (
               <span className="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-[#232A3D] text-[#A6B7D4] border border-[#48516A]">
                 {link.badge}
               </span>
             )}
-            {!isOpen && (
+            {!expanded && (
               <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#232A3D] text-[#F0EBDD] text-xs font-sans rounded-md border border-[#48516A] shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
                 {link.name}
               </div>
@@ -119,7 +138,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
       {/* Verified NASA & Global Data Source Status */}
       <div className="p-3 border-t border-[#48516A] text-[11px] space-y-2 bg-[#171B2B]">
-        {isOpen ? (
+        {expanded ? (
           <div className="space-y-1.5">
             <div className="text-[10px] text-[#838FA3] uppercase font-semibold tracking-wider flex items-center justify-between">
               <span>Data Telemetry</span>

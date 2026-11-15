@@ -377,7 +377,7 @@ export default function OverviewDashboard() {
           </div>
 
           {/* Map Container Viewport */}
-          <div className="h-[430px] w-full rounded-lg overflow-hidden border border-[#48516A] relative">
+          <div className="h-[340px] sm:h-[430px] w-full rounded-lg overflow-hidden border border-[#48516A] relative">
             <MapContainer
               center={[activeLocation.lat, activeLocation.lon]}
               zoom={6}

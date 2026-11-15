@@ -9,18 +9,25 @@ import {
   Search, 
   MapPin, 
   Menu,
+  X,
   Sparkles
 } from 'lucide-react';
 import { PRESET_LOCATIONS } from '../lib/nasaPowerService';
 
 interface HeaderProps {
   onToggleAi?: () => void;
+  isMobileSidebarOpen?: boolean;
   onToggleMobileSidebar?: () => void;
   selectedLocation?: { name: string; lat: number; lon: number };
   onSelectLocation?: (loc: typeof PRESET_LOCATIONS[0]) => void;
 }
 
-export default function Header({ onToggleAi, onToggleMobileSidebar, selectedLocation }: HeaderProps) {
+export default function Header({ 
+  onToggleAi, 
+  isMobileSidebarOpen = false, 
+  onToggleMobileSidebar, 
+  selectedLocation 
+}: HeaderProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date().toUTCString().slice(17, 22) + ' UTC');
   const navigate = useNavigate();
@@ -54,28 +61,35 @@ export default function Header({ onToggleAi, onToggleMobileSidebar, selectedLoca
     : '21.1458°N, 79.0882°E';
 
   return (
-    <header className="h-14 bg-[#171B2B] text-[#F0EBDD] flex items-center justify-between px-4 sm:px-6 border-b border-[#48516A] shrink-0 relative z-40 select-none font-sans">
+    <header className="h-14 w-full max-w-full min-w-0 bg-[#171B2B] text-[#F0EBDD] flex items-center justify-between px-3 sm:px-6 border-b border-[#48516A] shrink-0 relative z-40 select-none font-sans gap-2 overflow-hidden">
       
-      {/* 1. Left: Mobile Toggle & Brand */}
-      <div className="flex items-center gap-3">
+      {/* 1. Left: Mobile Hamburger Toggle & Brand */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
         <button 
+          type="button"
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-1.5 text-[#B5BDCC] hover:text-[#F0EBDD] hover:bg-[#232A3D] rounded-lg transition-colors cursor-pointer"
-          aria-label="Toggle navigation menu"
+          aria-expanded={isMobileSidebarOpen}
+          aria-controls="mobile-navigation-sidebar"
+          aria-label={isMobileSidebarOpen ? "Close navigation sidebar" : "Open navigation sidebar"}
+          className="lg:hidden p-2 text-[#F0EBDD] bg-[#232A3D] hover:bg-[#353D55] border border-[#48516A] hover:border-[#A6B7D4] rounded-lg transition-colors cursor-pointer shrink-0 flex items-center justify-center"
         >
-          <Menu className="w-5 h-5" />
+          {isMobileSidebarOpen ? (
+            <X className="w-4 h-4 text-[#A6B7D4]" />
+          ) : (
+            <Menu className="w-4 h-4 text-[#F0EBDD]" />
+          )}
         </button>
 
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
           <img 
             src="/assets/aistudio/image_eed5d808.png" 
             alt="EARTH TRACE Logo" 
-            className="h-8 md:h-8.5 w-auto object-contain shrink-0" 
+            className="h-7 sm:h-8 md:h-8.5 w-auto object-contain shrink-0" 
           />
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 leading-tight">
-              <span className="font-extrabold text-sm tracking-wide text-[#F0EBDD] font-space">EARTH TRACE</span>
-              <span className="text-[10px] font-mono text-[#B5BDCC] hidden sm:inline">
+              <span className="font-extrabold text-xs sm:text-sm tracking-wide text-[#F0EBDD] font-space whitespace-nowrap">EARTH TRACE</span>
+              <span className="text-[10px] font-mono text-[#B5BDCC] hidden md:inline">
                 · Earth Observation
               </span>
             </div>
@@ -84,21 +98,21 @@ export default function Header({ onToggleAi, onToggleMobileSidebar, selectedLoca
       </div>
 
       {/* 2. Center: Global Search Bar */}
-      <div className="flex items-center gap-2 flex-1 max-w-sm mx-4">
-        <form onSubmit={handleSearchSubmit} className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#838FA3]" />
+      <div className="flex items-center gap-2 flex-1 max-w-sm mx-1 sm:mx-4 min-w-0">
+        <form onSubmit={handleSearchSubmit} className="relative w-full min-w-0">
+          <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#838FA3]" />
           <input
             type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search stations, coordinates, or hazards..."
-            className="w-full bg-[#232A3D] border border-[#48516A] rounded-lg py-1.5 pl-9 pr-3 text-xs focus:outline-none focus:border-[#A6B7D4] text-[#F0EBDD] placeholder-[#838FA3] font-sans transition-colors"
+            placeholder="Search stations, coordinates..."
+            className="w-full min-w-0 bg-[#232A3D] border border-[#48516A] rounded-lg py-1.5 pl-8 sm:pl-9 pr-2.5 text-xs focus:outline-none focus:border-[#A6B7D4] text-[#F0EBDD] placeholder-[#838FA3] font-sans transition-colors"
           />
         </form>
       </div>
 
       {/* 3. Right: Location Tag, Telemetry Status & Assistant Shortcut */}
-      <div className="flex items-center gap-3 text-xs">
+      <div className="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
         
         {/* Selected Geographical Location */}
         <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#232A3D] border border-[#48516A] rounded-lg text-[#B5BDCC]">

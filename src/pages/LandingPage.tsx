@@ -23,10 +23,12 @@ import {
   Compass,
   FileText,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  Users
 } from 'lucide-react';
 import AtmosphericGlobe3D from '../components/AtmosphericGlobe3D';
 import AtmosphericColumn3D from '../components/AtmosphericColumn3D';
+import TeamMembersSection from '../components/TeamMembersSection';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'mission' | 'architecture' | 'team'>('mission');
@@ -115,15 +117,15 @@ export default function LandingPage() {
       features: ['Mann-Kendall Test', 'Sen’s Non-Parametric Slope', 'Decadal Change Rate', '95% Confidence Bounds']
     },
     {
-      id: 'reports',
-      title: 'Reports & Data Dossiers',
-      path: '/reports',
-      icon: FileText,
-      badge: 'EXPORTS',
-      color: 'border-[#35C98B]/40 text-[#35C98B]',
+      id: 'members',
+      title: 'Team 404 Err Members',
+      path: '/members',
+      icon: Users,
+      badge: 'TEAM ROSTER',
+      color: 'border-[#A6B7D4]/40 text-[#A6B7D4]',
       glow: '',
-      desc: 'Publication-ready technical memorandums, PDF formats, high-resolution chart graphics, and RFC-4180 CSV dataset exports.',
-      features: ['Technical Memo Export', 'High-Res Graphics', 'RFC-4180 CSV Download', 'Citation Key']
+      desc: 'Dedicated members directory featuring Team 404 Err researcher portraits, system roles, and direct Instagram handles.',
+      features: ['5 Core Team Members', 'Member Portraits', 'Instagram Handles', 'Subsystem Attribution']
     }
   ];
 
@@ -178,7 +180,6 @@ export default function LandingPage() {
               <ShieldAlert className="w-3 h-3 text-[#F16C72]" />
               <span>Disaster Watch</span>
             </Link>
-            <Link to="/trend-detective" className="hover:text-[#F0EBDD] transition-colors">Trend Detective</Link>
             <Link 
               to="/blindspot" 
               className="px-2.5 py-1 rounded-lg bg-[#F0B44D]/15 text-[#F0B44D] border border-[#F0B44D]/40 hover:bg-[#F0B44D]/25 transition-colors flex items-center gap-1 font-bold"
@@ -190,19 +191,47 @@ export default function LandingPage() {
               <BrainCircuit className="w-3.5 h-3.5 text-[#D28B71]" />
               <span>AI Intelligence</span>
             </Link>
+            <Link to="/members" className="hover:text-[#F0EBDD] transition-colors flex items-center gap-1">
+              <Users className="w-3.5 h-3.5 text-[#A6B7D4]" />
+              <span>Members</span>
+            </Link>
           </nav>
 
           {/* Direct CTA */}
           <div className="flex items-center gap-2.5">
             <Link
               to="/earth-explorer"
-              className="px-4 py-2 text-xs font-bold text-[#171B2B] bg-[#A6B7D4] hover:bg-[#B8C6DF] rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer font-mono"
+              className="px-3 sm:px-4 py-2 text-xs font-bold text-[#171B2B] bg-[#A6B7D4] hover:bg-[#B8C6DF] rounded-xl transition-all shadow-sm flex items-center gap-1.5 sm:gap-2 cursor-pointer font-mono whitespace-nowrap"
             >
               <span>EXPLORE EARTH</span>
               <ArrowRight className="w-3.5 h-3.5 text-[#171B2B]" />
             </Link>
           </div>
         </div>
+
+        {/* Mobile Quick Navigation Strip */}
+        <nav className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-t border-[#2D354A] text-[11px] font-mono text-[#B5BDCC] scrollbar-none">
+          <Link to="/dashboard" className="px-2.5 py-1 rounded bg-[#232A3D] border border-[#48516A] text-[#F0EBDD] whitespace-nowrap flex items-center gap-1">
+            <LayoutDashboard className="w-3 h-3 text-[#A6B7D4]" />
+            <span>Overview</span>
+          </Link>
+          <Link to="/earth-explorer" className="px-2.5 py-1 rounded bg-[#232A3D] border border-[#48516A] text-[#B5BDCC] whitespace-nowrap">
+            Explorer
+          </Link>
+          <Link to="/disaster-watch" className="px-2.5 py-1 rounded bg-[#F16C72]/15 text-[#F16C72] border border-[#F16C72]/40 whitespace-nowrap font-bold">
+            Disaster Watch
+          </Link>
+          <Link to="/blindspot" className="px-2.5 py-1 rounded bg-[#F0B44D]/15 text-[#F0B44D] border border-[#F0B44D]/40 whitespace-nowrap font-bold">
+            72h Blindspot
+          </Link>
+          <Link to="/ai-insights" className="px-2.5 py-1 rounded bg-[#232A3D] border border-[#D28B71]/40 text-[#D28B71] whitespace-nowrap font-bold">
+            AI Intelligence
+          </Link>
+          <Link to="/members" className="px-2.5 py-1 rounded bg-[#232A3D] border border-[#A6B7D4]/40 text-[#A6B7D4] whitespace-nowrap font-bold flex items-center gap-1">
+            <Users className="w-3 h-3" />
+            <span>Members</span>
+          </Link>
+        </nav>
       </header>
 
       {/* Main Hero Container */}
@@ -233,9 +262,9 @@ export default function LandingPage() {
                   <span className="w-2 h-2 rounded-full bg-[#A6B7D4]"></span>
                   NASA Space Apps Challenge 2026
                 </span>
-                <span className="px-3 py-1 rounded bg-[#1D2436] border border-[#48516A] text-[#B5BDCC]">
+                <a href="#members-section" className="px-3 py-1 rounded bg-[#1D2436] hover:bg-[#232A3D] border border-[#48516A] text-[#B5BDCC] hover:text-[#F0EBDD] transition-colors">
                   Team 404 Err
-                </span>
+                </a>
               </div>
             </div>
 
@@ -270,10 +299,18 @@ export default function LandingPage() {
                 <Compass className="w-4 h-4 text-[#D28B71]" />
                 <span>DISCOVER FEATURES</span>
               </a>
+
+              <a
+                href="#members-section"
+                className="px-5 py-3.5 text-xs sm:text-sm font-bold text-[#A6B7D4] hover:text-[#F0EBDD] bg-[#1D2436] hover:bg-[#232A3D] border border-[#48516A] rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Users className="w-4 h-4 text-[#A6B7D4]" />
+                <span>MEET MEMBERS</span>
+              </a>
             </div>
 
             {/* Ground-Truth Telemetry Specs */}
-            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#48516A] font-mono text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#48516A] font-mono text-xs">
               <div className="p-3 bg-[#232A3D] rounded-xl border border-[#48516A]">
                 <div className="text-[10px] text-[#B5BDCC] uppercase">Primary Data</div>
                 <div className="text-[#A6B7D4] font-bold mt-0.5">NASA POWER</div>
@@ -498,28 +535,18 @@ export default function LandingPage() {
           )}
 
           {activeTab === 'team' && (
-            <div className="p-6 bg-[#353D55] rounded-xl border border-[#48516A] space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#48516A] pb-4">
-                <div className="flex items-center gap-4">
-                  <img 
-                    src="/assets/aistudio/image_0bb54710.png" 
-                    alt="NASA Space Apps Challenge" 
-                    className="h-10 sm:h-12 w-auto object-contain shrink-0" 
-                  />
-                  <div>
-                    <h3 className="text-lg font-bold text-[#F0EBDD] font-space">Team 404 Err · NASA Space Apps Challenge 2026</h3>
-                    <p className="text-xs text-[#B5BDCC]">
-                      Challenge: "Be An Earth System Trend Detective" · Resilience Module: "The 72-Hour Blindspot"
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-[#B5BDCC] leading-relaxed font-sans">
-                Team 404 Err engineered EARTH TRACE as a full-stack, scientific-grade analytical solution delivering an uncompromising standard of data integrity: every visualization is verifiable, every statistical test is documented, and every alert decision is transparently defended.
-              </p>
+            <div className="space-y-6">
+              <TeamMembersSection compact showDedicatedPageLink />
             </div>
           )}
 
+        </section>
+
+        {/* ======================================================== */}
+        {/* DEDICATED SEPARATE TEAM MEMBERS SECTION                  */}
+        {/* ======================================================== */}
+        <section id="members-section" className="bg-[#232A3D] border border-[#48516A] rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <TeamMembersSection showDedicatedPageLink />
         </section>
 
         {/* ======================================================== */}
@@ -604,7 +631,8 @@ export default function LandingPage() {
             />
             <span className="text-[#B5BDCC]">EARTH TRACE · Team 404 Err for NASA Space Apps Challenge 2026</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6">
+            <Link to="/members" className="hover:text-[#F0EBDD] transition-colors">Members</Link>
             <Link to="/about" className="hover:text-[#F0EBDD] transition-colors">Methodology</Link>
             <Link to="/reports" className="hover:text-[#F0EBDD] transition-colors">Reports</Link>
             <Link to="/blindspot" className="hover:text-[#F0B44D] transition-colors">72h Blindspot</Link>

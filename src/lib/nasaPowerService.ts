@@ -155,15 +155,25 @@ export async function fetchNasaLocationData(
   // Query meteorological drivers from NASA POWER
   const requestedPowerParams = 'T2M,T2M_MAX,T2M_MIN,RH2M,PRECTOTCORR,WS10M,ALLSKY_KT,PS';
   const url = `/api/nasa-power?lat=${lat}&lon=${lon}&start=${startYear}&end=${endYear}&type=monthly&parameters=${requestedPowerParams}`;
-  
-  const response = await fetch(url);
-  if (!response.ok) {
-    const errorJson = await response.json().catch(() => ({}));
-    throw new Error(errorJson.error || `HTTP ${response.status}: Failed to retrieve NASA POWER atmospheric data`);
-  }
+  const directNasaUrl = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${requestedPowerParams}&community=RE&longitude=${lon.toFixed(4)}&latitude=${lat.toFixed(4)}&start=${startYear}&end=${endYear}&format=JSON`;
 
-  const json = await response.json();
-  const rawParams = json.properties?.parameter || {};
+  let json: any = null;
+  try {
+    const response = await fetch(url);
+    const contentType = response.headers.get('content-type') || '';
+    if (response.ok && contentType.includes('application/json')) {
+      json = await response.json();
+    } else {
+      throw new Error(`Proxy unavailable or returned non-JSON (${response.status})`);
+    }
+  } catch {
+    const directRes = await fetch(directNasaUrl);
+    if (!directRes.ok) {
+      throw new Error(`HTTP ${directRes.status}: Failed to retrieve NASA POWER atmospheric data`);
+    }
+    json = await directRes.json();
+  }
+  const rawParams = json?.properties?.parameter || {};
 
   const warnings: string[] = [];
   const points: NasaTimeSeriesPoint[] = [];
@@ -358,15 +368,23 @@ export async function fetchNasaDailyAnnualT2M(
   const apiEndpoint = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=RE&longitude=${lon.toFixed(4)}&latitude=${lat.toFixed(4)}&start=${startDay}&end=${endDay}&format=JSON`;
   
   const proxyUrl = `/api/nasa-power?lat=${lat}&lon=${lon}&start=${startDay}&end=${endDay}&param=T2M&type=daily`;
-  const response = await fetch(proxyUrl);
-  
-  if (!response.ok) {
-    const errorJson = await response.json().catch(() => ({}));
-    throw new Error(errorJson.error || `HTTP ${response.status}: Failed to fetch daily T2M data from NASA POWER API`);
+  let json: any = null;
+  try {
+    const response = await fetch(proxyUrl);
+    const contentType = response.headers.get('content-type') || '';
+    if (response.ok && contentType.includes('application/json')) {
+      json = await response.json();
+    } else {
+      throw new Error(`Proxy unavailable (${response.status})`);
+    }
+  } catch {
+    const directRes = await fetch(apiEndpoint);
+    if (!directRes.ok) {
+      throw new Error(`HTTP ${directRes.status}: Failed to fetch daily T2M data from NASA POWER API`);
+    }
+    json = await directRes.json();
   }
-
-  const json = await response.json();
-  const t2mMap: Record<string, number> = json.properties?.parameter?.T2M || {};
+  const t2mMap: Record<string, number> = json?.properties?.parameter?.T2M || {};
   
   if (Object.keys(t2mMap).length === 0) {
     throw new Error('NASA POWER daily API returned zero T2M observations for this coordinate and timeframe.');

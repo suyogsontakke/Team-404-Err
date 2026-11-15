@@ -17,6 +17,7 @@ import MethodologyAbout from './pages/MethodologyAbout';
 import BlindspotSimulator from './pages/BlindspotSimulator';
 import GlobalDisasterWatch from './pages/GlobalDisasterWatch';
 import EarthObservatoryPage from './pages/EarthObservatoryPage';
+import TeamMembersPage from './pages/TeamMembersPage';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/comparison" element={<LocationComparison />} />
           <Route path="/ai-insights" element={<AIInsights />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/members" element={<TeamMembersPage />} />
           <Route path="/about" element={<MethodologyAbout />} />
         </Route>
       </Routes>

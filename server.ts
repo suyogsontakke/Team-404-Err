@@ -1017,12 +1017,27 @@ Use Google Search grounding to retrieve authentic, recent articles, papers, and 
     }
   });
 
-  // Vite Middleware
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: 'spa',
+  // Ensure any unmatched /api/* route always returns valid JSON rather than SPA HTML
+  app.all('/api/*', (req, res) => {
+    res.status(404).json({
+      error: `API endpoint not found: ${req.method} ${req.originalUrl}`
+    });
   });
-  app.use(vite.middlewares);
+
+  if (process.env.NODE_ENV === 'production') {
+    const distPath = path.resolve(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  } else {
+    // Vite Middleware
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }
 
   app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
