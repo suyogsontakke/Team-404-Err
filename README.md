@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://i.postimg.cc/HkXcxcgX/1758263167091.png" alt="EARTH TRACE Logo" width="140" />
+  <img src="https://i.postimg.cc/gjFbvw2F/image.png" alt="EARTH TRACE Logo" width="440" />
   <h1>EARTH TRACE — Space-Tech Earth Intelligence Platform</h1>
   <p>
     <strong>NASA Space Apps Challenge 2026 · Team 404 Err</strong>
@@ -17,9 +17,32 @@
     <img src="https://img.shields.io/badge/Stack-React_%7C_Vite_%7C_TypeScript_%7C_Three.js-blueviolet?style=flat-square" alt="Tech Stack"/>
   </p>
   
-  <strong>Live Demo: <a href="https://ais-pre-mhztxygzf2sijvpbmsye4l-75660129323.asia-southeast1.run.app">EARTH TRACE LIVE</a></strong> · 
+  <strong>Live Demo: <a href="https://earth-trace-nsa.vercel.app/">EARTH TRACE LIVE</a></strong> · 
   <strong>Android APK: <a href="android/EarthTrace.apk">Download APK</a></strong>
 </div>
+
+---
+
+## 📱 Live Demo & Screenshots
+
+* **Live Platform URL**: [EARTH TRACE Live Deployment](https://earth-trace-nsa.vercel.app/)
+* **Android APK**: [Download EarthTrace.apk](android/EarthTrace.apk)
+
+### Screenshot Gallery
+
+<div align="center">
+  <p><em>Overview Cockpit & 3D Earth Observatory</em></p>
+  <img src="https://i.postimg.cc/W1HpfwN0/image.png" alt="EARTH TRACE Overview" width="800"/> 
+  
+</div>
+
+<div align="center">
+  <p><em>Overview Cockpit & 3D Earth Observatory On A Android Screen</em></p>
+  <img src="https://i.postimg.cc/h45CvJtM/image.png" alt="EARTH TRACE Overview" width="200"/> 
+  
+</div>
+
+---
 
 ---
 
@@ -125,21 +148,7 @@ graph TD
 * **Backend Hosting**: Node.js, Express (mounted Vite middleware in dev, production static serving)
 * **Mobile / PWA**: Android APK packaging support (`android/EarthTrace.apk`)
 
----
 
-## 📱 Live Demo & Screenshots
-
-* **Live Platform URL**: [EARTH TRACE Live Deployment](https://ais-pre-mhztxygzf2sijvpbmsye4l-75660129323.asia-southeast1.run.app)
-* **Android APK**: [Download EarthTrace.apk](android/EarthTrace.apk)
-
-### Screenshot Gallery
-
-<div align="center">
-  <p><em>Overview Cockpit & 3D Earth Observatory</em></p>
-  <img src="https://i.postimg.cc/tgBc0sLf/image.png" alt="EARTH TRACE Overview" width="800"/>
-</div>
-
----
 
 ## 🧰 Installation & Setup Guide
 
