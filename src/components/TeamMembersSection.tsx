@@ -29,64 +29,40 @@ function Instagram({ className = 'w-4 h-4' }: { className?: string }) {
 export interface TeamMember {
   id: string;
   name: string;
-  statusIndicator: string;
-  role: string;
-  focusArea: string;
   instaHandle: string;
   photoUrl: string;
-  bio: string;
 }
 
 export const TEAM_404_MEMBERS: TeamMember[] = [
   {
     id: 'member-suyog-sontakke',
     name: 'Suyog Sontakke',
-    statusIndicator: 'Active Researcher',
-    role: 'Lead Systems Architect',
-    focusArea: 'NASA POWER Pipeline & Full-Stack Core',
     instaHandle: '@suyog_sontakke',
-    photoUrl: memberSuyogImg,
-    bio: 'Architected the EARTH TRACE geospatial platform, NASA POWER / MERRA-2 ingestion pipeline, and scientific telemetry interfaces.'
+    photoUrl: memberSuyogImg
   },
   {
     id: 'member-sudhanshu-dangre',
     name: 'Sudhanshu Dangre',
-    statusIndicator: 'Data Analyst',
-    role: 'Atmospheric Data Scientist',
-    focusArea: 'Mann-Kendall & Non-Parametric Kernel',
     instaHandle: '@sudhanshu_d13',
-    photoUrl: memberSudhanshuImg,
-    bio: 'Engineered the non-parametric Mann-Kendall rank correlation test, tied-group variance corrections, and Sen’s slope estimators.'
+    photoUrl: memberSudhanshuImg
   },
   {
     id: 'member-chitrasen-gautam',
     name: 'Chitrasen Gautam',
-    statusIndicator: 'AI & Risk Researcher',
-    role: 'Climate AI & Risk Analyst',
-    focusArea: '72-Hour Blindspot & Grounded Synthesis',
     instaHandle: '@chitrasen.in',
-    photoUrl: memberChitrasenImg,
-    bio: 'Developed the 72-Hour Blindspot latency decision matrix, GDACS/INFORM multi-hazard integration, and zero-hallucination AI synthesis.'
+    photoUrl: memberChitrasenImg
   },
   {
     id: 'member-nishant-gaikwad',
     name: 'Nishant Gaikwad',
-    statusIndicator: 'UI & 3D Designer',
-    role: '3D Geospatial & Telemetry Lead',
-    focusArea: '3D Earth Observatory & LiDAR Point Cloud',
     instaHandle: '@nishant_stories',
-    photoUrl: memberNishantImg,
-    bio: 'Designed the Three.js orbital observatory, CALIOP vertical atmospheric curtain shaders, and interactive terrain elevation meshes.'
+    photoUrl: memberNishantImg
   },
   {
     id: 'member-shrey-patle',
     name: 'Shrey Patle',
-    statusIndicator: 'Active Researcher',
-    role: 'Environmental Systems Engineer',
-    focusArea: 'Multi-Layer Spectral & Boundary Physics',
     instaHandle: '@_ishrey',
-    photoUrl: memberShreyImg,
-    bio: 'Built the planetary boundary layer simulation, environmental spectral layer deck, and publication-grade scientific report exports.'
+    photoUrl: memberShreyImg
   }
 ];
 
@@ -105,7 +81,6 @@ interface TeamMembersSectionProps {
 }
 
 export default function TeamMembersSection({
-  compact = false,
   showDedicatedPageLink = false
 }: TeamMembersSectionProps) {
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
@@ -160,7 +135,7 @@ export default function TeamMembersSection({
                   {!imgFailed && member.photoUrl ? (
                     <img
                       src={member.photoUrl}
-                      alt={`${member.name} — ${member.role}`}
+                      alt={member.name}
                       referrerPolicy="no-referrer"
                       onError={() =>
                         setFailedImages(prev => ({ ...prev, [member.id]: true }))
@@ -173,45 +148,23 @@ export default function TeamMembersSection({
                       <span className="text-base font-bold text-[#F0EBDD] font-space">
                         {member.name}
                       </span>
-                      <span className="text-xs font-mono text-[#838FA3] mt-0.5">
-                        {member.role}
-                      </span>
                     </div>
                   )}
 
                   {/* Measured Contrast Scrim at Bottom of Portrait */}
-                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#171B2B]/95 via-[#171B2B]/55 to-transparent pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#171B2B]/95 via-[#171B2B]/40 to-transparent pointer-events-none" />
 
-                  {/* Bottom-Left Editorial Index, Name & Status Indicator Overlay */}
+                  {/* Bottom-Left Editorial Index & Name Overlay */}
                   <div className="absolute bottom-3 left-3.5 right-3.5 flex items-end justify-between gap-2 pointer-events-none">
                     <div className="min-w-0">
-                      <div className="text-[10px] font-mono text-[#B5BDCC] tracking-wide">
-                        0{index + 1} · {member.role}
+                      <div className="text-[10px] font-mono text-[#A6B7D4] tracking-wide">
+                        0{index + 1}
                       </div>
                       <h3 className="text-base sm:text-lg font-bold text-[#F0EBDD] leading-tight font-space truncate">
                         {member.name}
                       </h3>
-                      <div className="mt-1 flex items-center gap-1.5 text-[11px] font-mono text-[#35C98B]">
-                        <span aria-hidden="true">●</span>
-                        <span className="font-semibold text-[#F0EBDD]">{member.statusIndicator}</span>
-                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Member Details Body */}
-                <div className="p-4 space-y-2">
-                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#A6B7D4]">
-                    <span className="text-[#35C98B] font-semibold">{member.statusIndicator}</span>
-                    <span className="text-[#838FA3]" aria-hidden="true">·</span>
-                    <span className="truncate">{member.focusArea}</span>
-                  </div>
-
-                  {!compact && (
-                    <p className="text-xs text-[#B5BDCC] leading-relaxed">
-                      {member.bio}
-                    </p>
-                  )}
                 </div>
               </div>
 

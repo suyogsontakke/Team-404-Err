@@ -88,10 +88,7 @@ export default function Header({
           />
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 leading-tight">
-              <span className="font-extrabold text-xs sm:text-sm tracking-wide text-[#F0EBDD] font-space whitespace-nowrap">EARTH TRACE</span>
-              <span className="text-[10px] font-mono text-[#B5BDCC] hidden md:inline">
-                · Earth Observation
-              </span>
+              <span style={{ fontSize: '13px', textAlign: 'left', lineHeight: '16px' }} className="font-extrabold tracking-wide text-[#F0EBDD] font-space whitespace-nowrap">EARTH TRACE</span>
             </div>
           </div>
         </Link>
