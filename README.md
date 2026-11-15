@@ -54,7 +54,6 @@
 * [👥 Team Details (Team 404 Err)](#-team-details-team-404-err)
 * [🛠️ Solution Overview & Architecture](#️-solution-overview--architecture)
   * [Core Modules](#core-modules)
-  * [System Architecture](#system-architecture)
   * [Technology Stack](#technology-stack)
 * [📱 Live Demo & Screenshots](#-live-demo--screenshots)
 * [🧰 Installation & Setup Guide](#-installation--setup-guide)
@@ -114,41 +113,39 @@ During sudden environmental disruptions or severe weather events, raw satellite 
 8. **Reports & Analytics (`/reports`)**: Publication-ready technical memorandums, PDF formats, high-resolution chart graphics, and RFC-4180 CSV dataset exports.
 9. **Team Members Directory (`/members`)**: Dedicated roster showcasing Team 404 Err member portraits, roles, status indicators, and direct Instagram handles.
 
-### System Architecture
 
-```mermaid
-graph TD
-    A[User Interface / React SPA] --> B[Dashboard & 3D Observatory]
-    A --> C[Earth Explorer & Layer Inspector]
-    A --> D[Trend Detective & Mann-Kendall Engine]
-    A --> E[72-Hour Blindspot Simulator]
-    
-    B --> F[Express Backend Server /api/*]
-    C --> F
-    D --> F
-    E --> F
 
-    F --> G[NASA POWER API & MERRA-2 Reanalysis]
-    F --> H[GDACS & INFORM Disaster Feeds]
-    F --> I[Google Gemini AI SDK (Grounded)]
-
-    D --> J[Statistical Analysis: OLS & Sen's Slope]
-    E --> K[Latency & Confidence Scoring Engine]
-    I --> L[Structured JSON Parsing & Data Synthesis Fallback]
-```
+**Architecture flow:** Users interact with the React interface; visualization and analysis modules present Earth data and calculate trends or observation confidence. Requests for external environmental data, disaster feeds, and Gemini AI assistance pass through the Express `/api/*` layer. The app supports Vite middleware during development, production static serving, and Android APK packaging.
 
 ### Technology Stack
 
-* **Frontend Framework**: React 19, Vite, TypeScript, React Router Dom
-* **Styling**: Tailwind CSS v4, Framer Motion
-* **Mapping & Spatial**: Leaflet, React Leaflet, Three.js (WebGL 3D Earth Observatory)
-* **Charts & Analytics**: Recharts, Custom SVG Statistical Renderers
-* **Data APIs**: NASA POWER Daily Point API, NASA MERRA-2 Reanalysis, GDACS, INFORM Risk Index
-* **AI Integration**: `@google/genai` TypeScript SDK (Gemini 4 Hydrogen & Gemini Flash)
-* **Backend Hosting**: Node.js, Express (mounted Vite middleware in dev, production static serving)
-* **Mobile / PWA**: Android APK packaging support (`android/EarthTrace.apk`)
+The following logos highlight the principal technologies used by EARTH TRACE. They are displayed as a compact, dark-background logo strip, followed by the full stack grouped by responsibility.
 
+<div align="center">
+  <p>
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" width="46" height="46" />&nbsp;&nbsp;
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg" alt="Vite" width="46" height="46" />&nbsp;&nbsp;
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" width="46" height="46" />&nbsp;&nbsp;
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" alt="Tailwind CSS" width="46" height="46" />&nbsp;&nbsp;
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/threejs/threejs-original.svg" alt="Three.js" width="46" height="46" />&nbsp;&nbsp;
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" width="46" height="46" />&nbsp;&nbsp;
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" alt="Express" width="46" height="46" />
+  </p>
+  <sub>React · Vite · TypeScript · Tailwind CSS · Three.js · Node.js · Express</sub>
+</div>
 
+| Area | Technologies & Services | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 19, Vite, TypeScript, React Router DOM | Component-based application, development/build tooling, type safety, and client-side navigation. |
+| **Styling & Motion** | Tailwind CSS v4, Framer Motion | Responsive interface styling and UI animations. |
+| **Maps & 3D** | Leaflet, React Leaflet, Three.js, WebGL | Interactive maps, spatial layers, and the 3D Earth Observatory. |
+| **Charts & Analytics** | Recharts, custom SVG renderers | Data visualizations and statistical graphics. |
+| **Scientific Data** | NASA POWER Daily Point API, NASA MERRA-2, GDACS, INFORM Risk Index | Earth-system observations, disaster alerts, and risk information. |
+| **AI** | `@google/genai` TypeScript SDK, Gemini models | Grounded natural-language explanations of trends, risk profiles, and data gaps. |
+| **Backend** | Node.js, Express | `/api/*` endpoints, external-service integration, and application serving. |
+| **Mobile** | Android APK packaging | Distribution of the Earth TRACE mobile application. |
+
+*The logo strip is illustrative of the core development stack; external scientific data providers and APIs are listed in the table above.*
 
 ## 🧰 Installation & Setup Guide
 
