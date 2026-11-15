@@ -29,7 +29,7 @@ import {
   fetchNasaLocationData, 
   LocationDataResult 
 } from '../lib/nasaPowerService';
-import EarthObservatory3D from '../components/EarthObservatory3D';
+import ReactGlobeViewer from '../components/ReactGlobeViewer';
 
 // Fix for default Leaflet marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -347,9 +347,11 @@ export default function EarthExplorer() {
         <div className="flex-1 h-full w-full relative z-0">
           {projection === 'globe' ? (
             <div className="w-full h-full bg-[#171B2B]">
-              <EarthObservatory3D
-                initialLocationName={selectedLocation.name}
-                onLocationSelect={(loc) => setSelectedLocation({ name: loc.name, lat: loc.lat, lon: loc.lon })}
+              <ReactGlobeViewer
+                selectedLocation={selectedLocation}
+                onSelectLocation={(loc) => setSelectedLocation({ name: loc.name, lat: loc.lat, lon: loc.lon })}
+                activeLayer={activeLayer}
+                layerOpacity={layerOpacity}
                 className="w-full h-full"
               />
             </div>
